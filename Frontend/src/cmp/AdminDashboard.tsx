@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { utilService } from "../services/util.service"
+import { useNavigate } from "react-router-dom"
 
 export function AdminDashboard(){
     const [workers,setWorkers] = useState(
@@ -33,12 +34,14 @@ export function AdminDashboard(){
   }  
     ]
     )
+    const navigate = useNavigate()
     function onRemoveWorker(id : string){
     setWorkers((workers)=>workers.filter((worker)=>worker.id!==id))
     }
     return(
         <div>
             <h2>רשימת עובדים</h2>
+            <button onClick={()=>{navigate(`/editWorker`)}}>הוספת עובד חדש</button>
         <ul>
         {
         workers.map(worker=>
@@ -53,7 +56,7 @@ export function AdminDashboard(){
                 <div className="worker-actions">
                 <button>צפייה</button>
                 <button onClick={()=>{onRemoveWorker(worker.id)}}>מחיקה</button>
-                <button>עריכת פרטים</button>
+                <button onClick={()=>{navigate(`/editWorker/${worker.id}`)}}>עריכת פרטים</button>
                 </div>
             
             </article>

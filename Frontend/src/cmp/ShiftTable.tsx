@@ -2,14 +2,24 @@ import { useEffect, useState } from "react"
 import type { Shift } from "../types/shift"
 import type { Worker } from "../types/auth"
 import { workerService } from "../services/worker.service"
+import { shiftService } from "../services/shift.service"
 export function ShiftTable(){
     const [shifts, setShifts] = useState<Shift[]>([])
     const [workers, setWorkers] = useState<Worker[]>([])
-    const days = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי', 'יום שבת'] as const
+    const days = [
+    { he: 'יום ראשון', en: 'sunday' },
+    { he: 'יום שני', en: 'monday' },
+    { he: 'יום שלישי', en: 'tuesday' },
+    { he: 'יום רביעי', en: 'wednesday' },
+    { he: 'יום חמישי', en: 'thursday' },
+    { he: 'יום שישי', en: 'friday' },
+    { he: 'יום שבת', en: 'saturday' },
+] as const
     const shiftTypes = ['morning', 'evening', 'night'] as const
 
     useEffect(()=>{
     setWorkers(workerService.query())
+    setShifts(shiftService.query())
     },[])
      function getWorkerInShift(day: string, type: string) {
         const shift = shifts.find(s => s.day === day && s.type === type)
@@ -31,10 +41,10 @@ export function ShiftTable(){
                 </thead>
                 <tbody>
                     {days.map(day => (
-                        <tr key={day}>
-                            <td>{day}</td>
+                        <tr key={day.en}>
+                            <td>{day.he}</td>
                             {shiftTypes.map(type => {
-                                const worker = getWorkerInShift(day, type)
+                                const worker = getWorkerInShift(day.en, type)
                                 return (
                                     <td key={type}>
                                         {worker ? (

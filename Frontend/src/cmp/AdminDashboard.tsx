@@ -1,7 +1,9 @@
+import { useState } from "react"
 import { utilService } from "../services/util.service"
 
 export function AdminDashboard(){
-    const workers = [
+    const [workers,setWorkers] = useState(
+        [
      {
     id: 'u101',
     firstName: 'דני',
@@ -30,6 +32,10 @@ export function AdminDashboard(){
     joinDate: Date.now()
   }  
     ]
+    )
+    function onRemoveWorker(id : string){
+    setWorkers((workers)=>workers.filter((worker)=>worker.id!==id))
+    }
     return(
         <div>
             <h2>רשימת עובדים</h2>
@@ -46,7 +52,7 @@ export function AdminDashboard(){
                 </div>
                 <div className="worker-actions">
                 <button>צפייה</button>
-                <button>מחיקה</button>
+                <button onClick={()=>{onRemoveWorker(worker.id)}}>מחיקה</button>
                 <button>עריכת פרטים</button>
                 </div>
             

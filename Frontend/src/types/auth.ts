@@ -15,6 +15,7 @@ export interface Worker{
   email: string;           
   phone: string;             
   joinDate: number;    
-  imgUrl?: string;         
+  imgUrl?: string;
+  password: string;         
   role?: 'admin' | 'employee'; 
 }

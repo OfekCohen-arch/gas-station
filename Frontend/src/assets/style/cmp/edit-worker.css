@@ -1,0 +1,22 @@
+.edit-worker{
+ display: flex;
+ flex-direction: column;
+ justify-content: center;   
+ align-items: center;
+}
+.add-worker-form{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+    margin-bottom: 20px;
+}
+.add-worker-form input{
+     width: 100%;      
+    padding: 12px;     
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; 
+    font-size: 16px;
+    text-align: right;
+}

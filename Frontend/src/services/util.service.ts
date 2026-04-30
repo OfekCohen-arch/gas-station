@@ -2,7 +2,7 @@ export const utilService = {
     makeId,
     getDate
 }
-function makeId(length = 6) {
+function makeId(length = 6) : string {
     var txt = ''
     var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 

@@ -1,42 +1,26 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { utilService } from "../services/util.service"
 import { useNavigate } from "react-router-dom"
-
+import { workerService } from "../services/worker.service"
+import type { Worker } from "../types/auth"
 export function AdminDashboard(){
-    const [workers,setWorkers] = useState(
-        [
-     {
-    id: 'u101',
-    firstName: 'דני',
-    lastName: 'כהן',
-    email: 'danny@example.com',
-    phone: '052-1112223',
-    imgUrl: 'https://pravatar.cc',
-    joinDate: Date.now()
-  },
-  {
-    id: 'u102',
-    firstName: 'מיכל',
-    lastName: 'לוי',
-    email: 'michal@example.com',
-    phone: '054-3334445',
-    imgUrl: 'https://pravatar.cc',
-    joinDate: Date.now()
-  },
-  {
-    id: 'u103',
-    firstName: 'איתי',
-    lastName: 'אברהם',
-    email: 'itay@example.com',
-    phone: '050-5556667',
-    imgUrl: 'https://pravatar.cc',
-    joinDate: Date.now()
-  }  
-    ]
-    )
+    const [workers,setWorkers] = useState<Worker[]>([])
     const navigate = useNavigate()
+    useEffect(()=>{
+        loadWorkers()
+    },[])
+    function loadWorkers(){
+     const workersData = workerService.query()   
+     setWorkers(workersData)
+    }
     function onRemoveWorker(id : string){
-    setWorkers((workers)=>workers.filter((worker)=>worker.id!==id))
+   try {
+        workerService.remove(id)
+        setWorkers((prev) => prev.filter(w => w.id !== id))
+    } catch (err) {
+        console.error('בעיה במחיקת עובד:', err)
+        alert('לא ניתן למחוק את העובד כרגע')
+    }
     }
     return(
         <div>

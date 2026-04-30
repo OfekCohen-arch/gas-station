@@ -27,6 +27,27 @@ export function ShiftTable(){
         
         return workers.find(w => w.id === shift.workerId)
     }
+function onAddWorkerToShift(day: string, type: string) {
+    const workerId = prompt("הכנס ID של עובד לשיבוץ (למשל u101):")
+    if (!workerId) return
+
+    const newShift: Shift = {
+        id: '', 
+        day: day as any, 
+        type: type as any,
+        workerId: workerId
+    }
+
+    shiftService.save(newShift)
+    setShifts([...shiftService.query()]) 
+}
+function onRemoveShift(day : string,type: string){
+    const shift = shifts.find(s => s.day === day && s.type === type)
+    if (shift) {
+        shiftService.remove(shift.id)
+        setShifts([...shiftService.query()])
+    }
+}
 
     return(
     <section className="shift-table">
@@ -51,9 +72,10 @@ export function ShiftTable(){
                                             <div className="assigned-worker">
                                                 <span>{worker.firstName}</span>
                                                 <button style={{fontSize: '10px', display: 'block', margin: '0 auto'}}>החלף</button>
+                                                <button style={{fontSize: '10px', display: 'block', margin: '0 auto'}} onClick={()=>onRemoveShift(day.en,type)}>X</button>
                                             </div>
                                         ) : (
-                                            <button>+</button>
+                                            <button onClick={()=>onAddWorkerToShift(day.en,type)}>+</button>
                                         )}
                                     </td>
                                 )

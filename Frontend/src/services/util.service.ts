@@ -1,5 +1,6 @@
 export const utilService = {
-    makeId
+    makeId,
+    getDate
 }
 function makeId(length = 6) {
     var txt = ''
@@ -10,4 +11,11 @@ function makeId(length = 6) {
     }
 
     return txt
+}
+function getDate(timestamp:number) : string{
+const dateObject = new Date(timestamp);
+
+// תוצאה לדוגמה: "30.4.2024"
+const formattedDate = dateObject.toLocaleDateString('he-IL'); 
+return formattedDate
 }

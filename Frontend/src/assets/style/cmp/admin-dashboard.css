@@ -1,0 +1,19 @@
+.worker-card {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;           
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  direction: rtl;                
+}
+
+.worker-info {
+  display: flex;
+  flex-direction: column;        
+  gap: 5px;
+}
+
+.worker-actions {
+  display: flex;
+  gap: 10px;                     
+}

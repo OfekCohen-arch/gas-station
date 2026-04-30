@@ -1,1 +1,5 @@
-@import '../style/base/base.css'
+/* base*/
+@import '../style/base/base.css';
+
+/*cmp*/
+@import '../style/cmp/admin-dashboard.css';

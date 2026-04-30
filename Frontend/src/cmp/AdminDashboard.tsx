@@ -1,3 +1,5 @@
+import { utilService } from "../services/util.service"
+
 export function AdminDashboard(){
     const workers = [
      {
@@ -30,13 +32,25 @@ export function AdminDashboard(){
     ]
     return(
         <div>
+            <h2>רשימת עובדים</h2>
         <ul>
         {
         workers.map(worker=>
             <li key={worker.id}>
-            <div>
+            <article className="worker-card">
+                <div className="worker-info">
             <p>{worker.firstName+' '+worker.lastName}</p>
-            </div>
+            <p>טלפון: {worker.phone}</p>
+            <p> {worker.email} :כתובת דוא"ל </p>
+            <p>תחילת עבודה: {utilService.getDate(worker.joinDate)}</p>
+                </div>
+                <div className="worker-actions">
+                <button>צפייה</button>
+                <button>מחיקה</button>
+                <button>עריכת פרטים</button>
+                </div>
+            
+            </article>
             </li>
         )
         }

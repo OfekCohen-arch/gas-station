@@ -3,31 +3,40 @@ import { utilService } from "./util.service"
 const workers = [
      {
     id: 'u101',
-    firstName: 'דני',
-    lastName: 'כהן',
-    email: 'danny@example.com',
+    firstName: 'גאיה',
+    lastName: 'כלף',
+    email: 'gaya@example.com',
     phone: '052-1112223',
     password:'bbb',
     joinDate: Date.now()
   },
   {
     id: 'u102',
-    firstName: 'מיכל',
-    lastName: 'לוי',
-    email: 'michal@example.com',
+    firstName: 'שלו',
+    lastName: 'ארדזי',
+    email: 'shalev@example.com',
     phone: '054-3334445',
     password:'bbb',
     joinDate: Date.now()
   },
   {
     id: 'u103',
-    firstName: 'איתי',
-    lastName: 'אברהם',
-    email: 'itay@example.com',
+    firstName: 'מיכל',
+    lastName: 'יפרח',
+    email: 'michal@example.com',
     phone: '050-5556667',
     password:'bbb',
     joinDate: Date.now()
-  }  
+  },
+  {
+    id: 'u104',
+    firstName: 'יואב',
+    lastName: 'רונן',
+    email: 'yoav@example.com',
+    phone: '050-5556667',
+    password:'bbb',
+    joinDate: Date.now()
+  }   
     ]
 
     export const workerService = {

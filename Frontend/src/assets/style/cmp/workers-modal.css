@@ -1,0 +1,39 @@
+.workers-modal{
+    border: 1px solid black;
+    z-index: 1000;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 8px;
+    padding: 20px;
+    background-color: white; 
+}
+.workers-list{
+    display: flex;
+    flex-direction: column;
+    gap: 10px; 
+    margin: 20px 0;
+}
+.worker-btn {
+    padding: 12px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s;
+}
+
+.worker-btn:hover {
+    background-color: #e2e6ea;
+}
+
+.cancel-btn {
+    margin-top: 10px;
+    background: none;
+    border: none;
+    color: #666;
+    text-decoration: underline;
+    cursor: pointer;
+}

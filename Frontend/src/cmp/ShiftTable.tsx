@@ -8,9 +8,12 @@ import { WorkersModal } from "./WorkersModal";
 export function ShiftTable() {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [workers, setWorkers] = useState<Worker[]>([]);
-  const [isModalOpen,setIsModalOpen] = useState<boolean>(false)
-  const [selectedSlot, setSelectedSlot] = useState({ day: '', type: '' });
-
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  type ShiftType = { en: "morning"; he: "בוקר" } | { en: "evening"; he: "צהריים" } | { en: "night"; he: "לילה" };
+const [selectedSlot, setSelectedSlot] = useState<{ day: string; type: ShiftType | null }>({
+  day: '',
+  type: null
+});
   const days = [
     { he: "יום ראשון", en: "sunday" },
     { he: "יום שני", en: "monday" },
@@ -20,15 +23,16 @@ export function ShiftTable() {
     { he: "יום שישי", en: "friday" },
     { he: "יום שבת", en: "saturday" },
   ] as const;
-  const shiftTypes = ["morning", "evening", "night"] as const;
+  const shiftTypes = [{en:"morning",he:'בוקר'}, {en:"evening",he:'צהריים'}, {en:"night",he:'לילה'}] as const;
 
   useEffect(() => {
     setWorkers(workerService.query());
     setShifts(shiftService.query());
   }, []);
-  
-  function openModal(day: string,type:string){
-    setSelectedSlot({ day, type });
+
+  function openModal(day: string, type: string) {
+    const shiftTypeObj = shiftTypes.find(t => t.en === type);
+    setSelectedSlot({ day, type:shiftTypeObj || null });
     setIsModalOpen(true);
   }
   function getWorkerInShift(day: string, type: string) {
@@ -37,11 +41,11 @@ export function ShiftTable() {
 
     return workers.find((w) => w.id === shift.workerId);
   }
-  function onAddWorkerToShift(day: string, type: string, workerId : string) {
+  function onAddWorkerToShift(day: string, type: string, workerId: string) {
     if (!workerId) return;
     const isWorkingSameDay = shiftTypes.some(
       (shiftType) =>
-        shiftType !== type && getWorkerInShift(day, shiftType)?.id === workerId,
+        shiftType.en !== type && getWorkerInShift(day, shiftType.en)?.id === workerId,
     );
 
     if (isWorkingSameDay) {
@@ -96,25 +100,29 @@ export function ShiftTable() {
       <table border={1} style={{ width: "100%", textAlign: "center" }}>
         <thead>
           <tr>
-            <th>יום / משמרת</th>
-            <th>בוקר</th>
-            <th>ערב</th>
-            <th>לילה</th>
+            <th>משמרת / יום</th>
+            <th>יום ראשון</th>
+            <th>יום שני</th>
+            <th>יום שלישי</th>
+            <th>יום רביעי</th>
+            <th>יום חמישי</th>
+            <th>יום שישי</th>
+            <th>יום שבת</th>
           </tr>
         </thead>
         <tbody>
-          {days.map((day) => (
-            <tr key={day.en}>
-              <td>{day.he}</td>
-              {shiftTypes.map((type) => {
-                const worker = getWorkerInShift(day.en, type);
+          {shiftTypes.map((type) => (
+            <tr key={type.en}>
+              <td>{type.he}</td>
+              {days.map((day) => {
+                const worker = getWorkerInShift(day.en, type.en);
                 return (
-                  <td key={type}>
+                  <td key={day.en}>
                     {worker ? (
                       <div className="assigned-worker">
                         <span>{worker.firstName}</span>
                         <button
-                          onClick={() => openModal(day.en, type)}
+                          onClick={() => openModal(day.en, type.en)}
                           style={{
                             fontSize: "10px",
                             display: "block",
@@ -129,15 +137,13 @@ export function ShiftTable() {
                             display: "block",
                             margin: "0 auto",
                           }}
-                          onClick={() => onRemoveShift(day.en, type)}
+                          onClick={() => onRemoveShift(day.en, type.en)}
                         >
                           X
                         </button>
                       </div>
                     ) : (
-                      <button onClick={() => openModal(day.en, type)}>
-                        +
-                      </button>
+                      <button onClick={() => openModal(day.en, type.en)}>+</button>
                     )}
                   </td>
                 );
@@ -146,14 +152,18 @@ export function ShiftTable() {
           ))}
         </tbody>
       </table>
-      <WorkersModal 
-      isOpen={isModalOpen}
-      onClose={()=>{setIsModalOpen(false)}}
-      day={selectedSlot.day}
-      type={selectedSlot.type}
-      workers={workers}
-      onSelectWorker={(workerId)=>onAddWorkerToShift(selectedSlot.day,selectedSlot.type,workerId)}
-      />
+      {selectedSlot && <WorkersModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+        }}
+        day={selectedSlot.day}
+        type={selectedSlot.type!}
+        workers={workers}
+        onSelectWorker={(workerId) =>
+          onAddWorkerToShift(selectedSlot.day, selectedSlot.type!.en, workerId)
+        }
+      />}
     </section>
   );
 }

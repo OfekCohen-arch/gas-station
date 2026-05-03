@@ -12,7 +12,7 @@ function App() {
 
   return (
     <Router>
-    <section>
+    <section className='app'>
       <Routes>
         <Route element={<Login/>} path='/'/>
         <Route element={<Dashboard/>} path='/dashboard'/>

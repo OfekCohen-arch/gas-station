@@ -166,45 +166,23 @@ export function ShiftTable({ isAdmin, currWorker }: Props) {
                 return (
                   <td
                     key={day.en}
-                    className={
-                      !isAdmin && currWorker?.id === worker?.id ? "logged-worker" : ""
-                    }
+                    className={`shift-cell ${!isAdmin && currWorker?.id === worker?.id ? "logged-worker" : ""}`}
+
+                    onClick={()=>{
+                        if(isAdmin) openModal(day.en,type.en)
+                    }}
+                    
                   >
                     {worker ? (
                       <div className="assigned-worker">
                         <span>{worker.firstName}</span>
-                        {isAdmin && (
-                          <div>
-                            <button
-                              onClick={() => openModal(day.en, type.en)}
-                              style={{
-                                fontSize: "10px",
-                                display: "block",
-                                margin: "0 auto",
-                              }}
-                            >
-                              החלף
-                            </button>
-                            <button
-                              style={{
-                                fontSize: "10px",
-                                display: "block",
-                                margin: "0 auto",
-                              }}
-                              onClick={() => onRemoveShift(day.en, type.en)}
-                            >
-                              X
-                            </button>
-                          </div>
-                        )}
                       </div>
-                    ) : (
-                      isAdmin && (
-                        <button onClick={() => openModal(day.en, type.en)}>
-                          +
-                        </button>
-                      )
-                    )}
+                    ) : ''
+                    }
+                    {isAdmin && worker && <button onClick={(event)=>{
+                        event.stopPropagation()
+                        onRemoveShift(day.en,type.en)
+                        }} className="remove-btn">X</button>}
                   </td>
                 );
               })}

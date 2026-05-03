@@ -5,7 +5,7 @@ interface Props {
   worker: Worker;
   constraints: Constraint[];
   onAddConstraint : (day:string,type:string) =>void
-  onRemoveConstraint : (id: string) =>void
+  onRemoveConstraint : (day: string,type: string) =>void
 }
 export function ConstraintTable({ worker, constraints, onAddConstraint,onRemoveConstraint }: Props) {
   const days = [
@@ -27,8 +27,7 @@ export function ConstraintTable({ worker, constraints, onAddConstraint,onRemoveC
   onAddConstraint(day,type)
   }
   else{ 
-    const con = await constraintService.getConstraint(worker.id,day,type)
-    if(con && con.id) onRemoveConstraint(con.id)
+     onRemoveConstraint(day,type)
 }
   }
   return (

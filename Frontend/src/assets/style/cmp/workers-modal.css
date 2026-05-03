@@ -30,10 +30,11 @@
 }
 
 .cancel-btn {
-    margin-top: 10px;
+   width: 100%;
     background: none;
     border: none;
     color: #666;
     text-decoration: underline;
     cursor: pointer;
+    margin-top: 10px;
 }

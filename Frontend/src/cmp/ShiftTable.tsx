@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import type { Shift } from "../types/shift";
+import type { Shift,Constraint } from "../types/shift";
 import type { Worker } from "../types/auth";
 import { workerService } from "../services/worker.service";
 import { shiftService } from "../services/shift.service";
 import Swal from "sweetalert2";
 import { WorkersModal } from "./WorkersModal";
+import { constraintService } from "../services/constraint.service";
 
 interface Props {
   isAdmin: boolean;
@@ -14,6 +15,7 @@ interface Props {
 export function ShiftTable({ isAdmin, currWorker }: Props) {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [workers, setWorkers] = useState<Worker[]>([]);
+  const [constraints,setConstraints] = useState<Constraint[]>([])
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   type ShiftType =
     | { en: "morning"; he: "בוקר" }
@@ -47,6 +49,7 @@ export function ShiftTable({ isAdmin, currWorker }: Props) {
   async function loadData() {
     setWorkers([...await workerService.query()])
     setShifts([...await shiftService.query()])
+    setConstraints([...await constraintService.query()])
   }
   function openModal(day: string, type: string) {
     const shiftTypeObj = shiftTypes.find((t) => t.en === type);
@@ -63,6 +66,7 @@ export function ShiftTable({ isAdmin, currWorker }: Props) {
     day: string,
     type: string,
     workerId: string,
+    isConstrained: boolean,
   ) {
     if (!workerId) return;
     const isWorkingSameDay = shiftTypes.some(
@@ -85,7 +89,19 @@ export function ShiftTable({ isAdmin, currWorker }: Props) {
       Swal.fire("עובד זה משובץ בבוקר שלמחרת - חובה להשאיר זמן למנוחה");
       return;
     }
-
+    if(isConstrained){
+    const result = await Swal.fire({
+            title: 'שים לב!',
+            text: "העובד הגיש אילוץ למשמרת זו. האם לשבץ אותו בכל זאת?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'כן, שבץ בכל זאת',
+            cancelButtonText: 'ביטול'
+        });
+        if(!result.isConfirmed) return
+    }
     const prevDay = days[dayIdx - 1];
     if (
       prevDay &&
@@ -95,26 +111,34 @@ export function ShiftTable({ isAdmin, currWorker }: Props) {
       Swal.fire("עובד זה עבד בלילה שלפני - חובה להשאיר זמן למנוחה");
       return;
     }
-    const newShift: Shift = {
-      id: "",
-      day: day as any,
-      type: type as any,
-      workerId: workerId,
-    };
     const existingShift = shifts.find((s) => s.day === day && s.type === type);
+    let savedShift;
+
     if (existingShift) {
-      const shiftToUpdate = { ...existingShift, workerId: workerId };
-      shiftService.save(shiftToUpdate);
+        const shiftToUpdate = { ...existingShift, workerId };
+        savedShift = await shiftService.save(shiftToUpdate);
     } else {
-      shiftService.save(newShift);
+        const newShift = { id: "", day, type, workerId };
+        savedShift = await shiftService.save({...newShift} as Shift);
     }
-    setShifts([...(await shiftService.query())]);
+
+    setShifts(prevShifts => {
+        if (!prevShifts) return [savedShift];
+        const idx = prevShifts.findIndex(s => s.day === day && s.type === type);
+        if (idx !== -1) {
+            const updated = [...prevShifts];
+            updated[idx] = savedShift;
+            return updated;
+        }
+        return [...prevShifts, savedShift];
+    });
   }
   async function onRemoveShift(day: string, type: string) {
     const shift = shifts.find((s) => s.day === day && s.type === type);
     if (shift) {
-      shiftService.remove(shift.id);
-      setShifts([...(await shiftService.query())]);
+        setShifts(shifts=>[...shifts.filter(s=>s.id !== shift.id)]);
+      await shiftService.remove(shift.id);
+      
     }
   }
   if(!shifts || !workers) return <div>טוען לוח משמרות...</div>
@@ -197,11 +221,13 @@ export function ShiftTable({ isAdmin, currWorker }: Props) {
           day={selectedSlot.day}
           type={selectedSlot.type!}
           workers={workers}
-          onSelectWorker={(workerId) =>
+          constraints={constraints}
+          onSelectWorker={(workerId,isConstrainted) =>
             onAddWorkerToShift(
               selectedSlot.day,
               selectedSlot.type!.en,
               workerId,
+              isConstrainted
             )
           }
         />

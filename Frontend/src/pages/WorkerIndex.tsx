@@ -8,7 +8,7 @@ import { constraintService } from "../services/constraint.service.ts";
 import { utilService } from "../services/util.service.ts";
 
 export function WorkerIndex() {
-  const workerId = "u102";
+  const workerId = "u101";
 
   const [constraints, setConstraints] = useState<Constraint[]>([]);
   const [worker, setWorker] = useState<Worker | null>(null);
@@ -32,17 +32,15 @@ export function WorkerIndex() {
         prev.map(c => c.id === tempId ? savedConstraint : c)
     );
   }
-  async function onRemoveConstraint(id: string) {
-     const constraintToRemove = constraints.find(c => 
-        c.id === id
-    );
-
-    if (!constraintToRemove) return;
-
-    setConstraints(prev => prev.filter(c => c.id !== constraintToRemove.id));
-
+  async function onRemoveConstraint(day: string,type:string) {
+     const con = await constraintService.getConstraint(workerId,day,type)
+     if (!con || !con.id) {
+        console.warn('No constraint found to remove');
+        return;
+    }
+    setConstraints(prev => prev.filter(c => c.id !== con.id));
     try {
-        await constraintService.remove(id);
+        await constraintService.remove(con.id);
     } catch (err) {
         console.error('Failed to remove from DB', err);
         const freshConstraints = await constraintService.query();

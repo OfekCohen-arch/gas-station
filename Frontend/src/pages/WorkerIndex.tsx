@@ -4,50 +4,35 @@ import type { Constraint } from "../types/shift.ts";
 import { ConstraintTable } from "../cmp/ConstraintTable.tsx";
 import { workerService } from "../services/worker.service.ts";
 import { ShiftTable } from "../cmp/ShiftTable.tsx";
-import { utilService } from "../services/util.service.ts";
+import { constraintService } from "../services/constraint.service.ts";
 
 export function WorkerIndex(){
-    const workerId = "u101";
-    const demoConstraints = [
-  {
-    id: "c101",
-    workerId: "u101",
-    day: "sunday",
-    type: "morning"
-  },
-  {
-    id: "c102",
-    workerId: "u101",
-    day: "tuesday",
-    type: "night"
-  },
-  {
-    id: "c103",
-    workerId: "u102",
-    day: "wednesday",
-    type: "evening"
-  }
-];
-const [constraints,setConstraints] = useState<Constraint[]>(demoConstraints)
+    const workerId = "u102";
+   
+const [constraints,setConstraints] = useState<Constraint[]>([])
   const [worker, setWorker] = useState<Worker | null> (null);
   useEffect(() => {
-    if(workerId) loadWorker(workerId)
+    if(workerId) loadData(workerId)
   }, []);
-  function loadWorker(workerId: string) {
+  function loadData(workerId: string) {
     const w = workerService.getById(workerId)
     if(w)setWorker(w)
+    const demoConstraints = constraintService.query()
+ if(demoConstraints)setConstraints(demoConstraints)
   }
 function onAddConstraint(day: string,type: string){
-const newConstraint = {
-id: utilService.makeId(),
+const constraintToAdd = {
+id: '',
 workerId,
 day,
 type
 }
-setConstraints(constraints=>[...constraints,newConstraint])
+const newConstraint = constraintService.save(constraintToAdd)
+if(newConstraint)setConstraints(constraints=>[...constraints,newConstraint])
 }
 function onRemoveConstraint(day: string,type: string){
-    setConstraints(constraints=>[...constraints.filter(c=>!(c.day === day && type === c.type && c.workerId === workerId))])
+   const idToRemove =  constraintService.remove(day,type,workerId)
+    setConstraints(constraints=>[...constraints.filter(c=>c.id !== idToRemove)])
 }
     return(
         <section className="worker-index">

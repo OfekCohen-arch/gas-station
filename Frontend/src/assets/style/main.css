@@ -1,7 +1,7 @@
 /* base*/
 @import '../style/base/base.css';
+@import '../style/base/helpers.css';
 
 /*cmp*/
 @import '../style/cmp/admin-dashboard.css';
 @import '../style/cmp/edit-worker.css';
-@import '../style/cmp/workers-modal.css'

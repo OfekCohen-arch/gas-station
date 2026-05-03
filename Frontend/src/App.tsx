@@ -6,6 +6,7 @@ import { Login } from './pages/Login'
 import { Dashboard } from './pages/Dashboard'
 import { EditWorker } from './pages/EditWorker'
 import { ShiftBoardPage } from './pages/ShiftBoardPage'
+import { WorkerIndex } from './pages/WorkerIndex'
 
 function App() {
 
@@ -18,6 +19,7 @@ function App() {
         <Route element={<EditWorker/>} path='/editWorker'/>
         <Route element={<EditWorker/>} path='/editWorker/:workerId'/>
         <Route element={<ShiftBoardPage/>} path='/shiftBoard'/>
+        <Route element={<WorkerIndex/>} path='/worker'/>
       </Routes>
     </section>
     </Router>

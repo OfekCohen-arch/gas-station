@@ -1,11 +1,18 @@
 import { useEffect, useState } from "react";
 import type { Shift } from "../types/shift";
-import type { Worker } from "../types/auth";
+import type { Worker} from "../types/auth";
 import { workerService } from "../services/worker.service";
 import { shiftService } from "../services/shift.service";
 import Swal from "sweetalert2";
 import { WorkersModal } from "./WorkersModal";
-export function ShiftTable() {
+
+interface Props{
+isAdmin: boolean,
+currWorker : Worker | null
+}
+
+
+export function ShiftTable({isAdmin,currWorker} : Props) {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -29,7 +36,6 @@ const [selectedSlot, setSelectedSlot] = useState<{ day: string; type: ShiftType 
     setWorkers(workerService.query());
     setShifts(shiftService.query());
   }, []);
-
   function openModal(day: string, type: string) {
     const shiftTypeObj = shiftTypes.find(t => t.en === type);
     setSelectedSlot({ day, type:shiftTypeObj || null });
@@ -117,11 +123,11 @@ const [selectedSlot, setSelectedSlot] = useState<{ day: string; type: ShiftType 
               {days.map((day) => {
                 const worker = getWorkerInShift(day.en, type.en);
                 return (
-                  <td key={day.en}>
+                  <td key={day.en} className={(!isAdmin && currWorker === worker)?'logged-worker': ''}>
                     {worker ? (
                       <div className="assigned-worker">
                         <span>{worker.firstName}</span>
-                        <button
+                        {isAdmin &&<div><button
                           onClick={() => openModal(day.en, type.en)}
                           style={{
                             fontSize: "10px",
@@ -140,10 +146,10 @@ const [selectedSlot, setSelectedSlot] = useState<{ day: string; type: ShiftType 
                           onClick={() => onRemoveShift(day.en, type.en)}
                         >
                           X
-                        </button>
+                        </button></div>}
                       </div>
                     ) : (
-                      <button onClick={() => openModal(day.en, type.en)}>+</button>
+                     isAdmin && <button onClick={() => openModal(day.en, type.en)}>+</button>
                     )}
                   </td>
                 );

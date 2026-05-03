@@ -1,3 +1,7 @@
 ul{
 list-style-type: none;
 }
+td{
+width: 100px;
+height: 100px;
+}

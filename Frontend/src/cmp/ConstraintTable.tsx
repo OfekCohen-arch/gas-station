@@ -1,5 +1,11 @@
-
-export function ConstraintTable() {
+import type { Worker } from "../types/auth";
+import type { Constraint } from "../types/shift";
+interface Props {
+  worker: Worker;
+  constraints: Constraint[];
+  onAddConstraint : (day:string,type:string) =>void
+}
+export function ConstraintTable({ worker, constraints, onAddConstraint }: Props) {
   const days = [
     { he: "יום ראשון", en: "sunday" },
     { he: "יום שני", en: "monday" },
@@ -14,7 +20,11 @@ export function ConstraintTable() {
     { en: "evening", he: "צהריים" },
     { en: "night", he: "לילה" },
   ] as const;
-  
+  function onToggleConstraint(day: string,type: string,state: boolean){
+  if(state === false){
+  onAddConstraint(day,type)
+  }
+  }
   return (
     <section>
       <h2>הגשת אילוצים לשבוע הבא</h2>
@@ -36,7 +46,21 @@ export function ConstraintTable() {
             <tr key={type.en}>
               <td>{type.he}</td>
               {days.map((day) => {
-                return <td key={day.en}></td>;
+                const hasConstraint = constraints.some(
+                  (c) =>
+                    c.workerId === worker?.id &&
+                    c.day === day.en &&
+                    c.type === type.en,
+                );
+                return (
+                  <td
+                    key={day.en}
+                    className={hasConstraint ? "constrained" : ""}
+                    onClick={() => onToggleConstraint(day.en, type.en,hasConstraint)}
+                  >
+                    {hasConstraint ? '❌' : ''}
+                  </td>
+                );
               })}
             </tr>
           ))}

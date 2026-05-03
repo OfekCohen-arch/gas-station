@@ -4,8 +4,9 @@ interface Props {
   worker: Worker;
   constraints: Constraint[];
   onAddConstraint : (day:string,type:string) =>void
+  onRemoveConstraint : (day:string,type:string) =>void
 }
-export function ConstraintTable({ worker, constraints, onAddConstraint }: Props) {
+export function ConstraintTable({ worker, constraints, onAddConstraint,onRemoveConstraint }: Props) {
   const days = [
     { he: "יום ראשון", en: "sunday" },
     { he: "יום שני", en: "monday" },
@@ -24,6 +25,7 @@ export function ConstraintTable({ worker, constraints, onAddConstraint }: Props)
   if(state === false){
   onAddConstraint(day,type)
   }
+  else onRemoveConstraint(day,type)
   }
   return (
     <section>

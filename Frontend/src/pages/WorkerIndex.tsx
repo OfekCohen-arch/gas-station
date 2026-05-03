@@ -46,12 +46,15 @@ type
 }
 setConstraints(constraints=>[...constraints,newConstraint])
 }
+function onRemoveConstraint(day: string,type: string){
+    setConstraints(constraints=>[...constraints.filter(c=>!(c.day === day && type === c.type && c.workerId === workerId))])
+}
     return(
         <section className="worker-index">
             <h1>שלום {worker?.firstName}</h1>
       <h2>המשמרות שלי לשבוע הקרוב</h2>
       <ShiftTable isAdmin={false} currWorker={worker}/>
-        <ConstraintTable constraints={constraints} worker={worker!} onAddConstraint={onAddConstraint}/>
+        <ConstraintTable constraints={constraints} worker={worker!} onAddConstraint={onAddConstraint} onRemoveConstraint={onRemoveConstraint}/>
         </section>
     )
 }

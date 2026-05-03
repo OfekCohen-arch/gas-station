@@ -1,10 +1,11 @@
+import { constraintService } from "../services/constraint.service";
 import type { Worker } from "../types/auth";
 import type { Constraint } from "../types/shift";
 interface Props {
   worker: Worker;
   constraints: Constraint[];
   onAddConstraint : (day:string,type:string) =>void
-  onRemoveConstraint : (day:string,type:string) =>void
+  onRemoveConstraint : (id: string) =>void
 }
 export function ConstraintTable({ worker, constraints, onAddConstraint,onRemoveConstraint }: Props) {
   const days = [
@@ -21,11 +22,14 @@ export function ConstraintTable({ worker, constraints, onAddConstraint,onRemoveC
     { en: "evening", he: "צהריים" },
     { en: "night", he: "לילה" },
   ] as const;
-  function onToggleConstraint(day: string,type: string,state: boolean){
+  async function onToggleConstraint(day: string,type: string,state: boolean){
   if(state === false){
   onAddConstraint(day,type)
   }
-  else onRemoveConstraint(day,type)
+  else{ 
+    const con = await constraintService.getConstraint(worker.id,day,type)
+    if(con && con.id) onRemoveConstraint(con.id)
+}
   }
   return (
     <section>

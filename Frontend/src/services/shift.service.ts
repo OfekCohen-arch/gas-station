@@ -1,10 +1,8 @@
 import type { Shift } from "../types/shift";
+import { storageService } from "./async-storage.service.ts";
 import { utilService } from "./util.service.ts";
 
-const shifts: Shift[] = [
-  { id: "s101", day: "sunday", type: "morning", workerId: "u101" },
-  { id: "s102", day: "monday", type: "evening", workerId: "u102" },
-];
+const STORAGE_KEY = 'shift'
 
 export const shiftService = {
   query,
@@ -13,26 +11,21 @@ export const shiftService = {
   remove,
 };
 
-function query() : Shift[] {
-  return shifts;
+function query() : Promise<Shift[]> {
+  return storageService.query(STORAGE_KEY)
 }
-function save(shift: Shift){
+function save(shift: Shift) : Promise<Shift>{
   if (shift.id) {
-    const idx = shifts.findIndex((currShift) => currShift.id === shift.id);
-    shifts[idx] = shift;
+    return storageService.put(STORAGE_KEY,shift)
   }
   else{
-    const id = 's'+utilService.makeId(3)
-    const newShift = { ...shift, id };
-    shifts.push(newShift);
-    return newShift;
+    shift.id = 's'+utilService.makeId(3)
+    return storageService.post(STORAGE_KEY,shift)
   }
 }
-function getById(id: string) : Shift | undefined {
-return shifts.find(shift=>shift.id === id)
+function getById(id: string) : Promise<Shift> {
+return storageService.get(STORAGE_KEY,id)
 }
-function remove(shiftId: string) {
-const idx = shifts.findIndex(shift=>shift.id === shiftId)
-if(idx === -1) return 
-else shifts.splice(idx,1)
+function remove(shiftId: string) : Promise<any> {
+return storageService.remove(STORAGE_KEY,shiftId)
 }

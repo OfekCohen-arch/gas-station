@@ -9,8 +9,8 @@ export function AdminDashboard(){
     useEffect(()=>{
         loadWorkers()
     },[])
-    function loadWorkers(){
-     const workersData = workerService.query()   
+     async function loadWorkers(){
+     const workersData = await workerService.query()   
      setWorkers(workersData)
     }
     function onRemoveWorker(id : string){

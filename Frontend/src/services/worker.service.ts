@@ -1,43 +1,7 @@
 import type { Worker } from "../types/auth"
+import { storageService } from "./async-storage.service"
 import { utilService } from "./util.service"
-const workers = [
-     {
-    id: 'u101',
-    firstName: 'גאיה',
-    lastName: 'כלף',
-    email: 'gaya@example.com',
-    phone: '052-1112223',
-    password:'bbb',
-    joinDate: Date.now()
-  },
-  {
-    id: 'u102',
-    firstName: 'שלו',
-    lastName: 'ארדזי',
-    email: 'shalev@example.com',
-    phone: '054-3334445',
-    password:'bbb',
-    joinDate: Date.now()
-  },
-  {
-    id: 'u103',
-    firstName: 'מיכל',
-    lastName: 'יפרח',
-    email: 'michal@example.com',
-    phone: '050-5556667',
-    password:'bbb',
-    joinDate: Date.now()
-  },
-  {
-    id: 'u104',
-    firstName: 'יואב',
-    lastName: 'רונן',
-    email: 'yoav@example.com',
-    phone: '050-5556667',
-    password:'bbb',
-    joinDate: Date.now()
-  }   
-    ]
+const STORAGE_KEY = 'worker'
 
     export const workerService = {
         query,
@@ -46,26 +10,23 @@ const workers = [
         save
     }
 
-    function query() : Worker[]{
-    return workers    
+    async function query() : Promise<Worker[]>{
+    return storageService.query(STORAGE_KEY)    
     }
-    function getById(id: string) : Worker | undefined{
-    return workers.find(worker=>worker.id === id)
+    async function getById(id: string) : Promise<Worker>{
+    return storageService.get(STORAGE_KEY,id)
     }
-    function remove(id: string){
-    const idx = workers.findIndex(w=>w.id === id)
-    if(idx === -1) return 
-    else workers.splice(idx,1)
+    async function remove(id: string) : Promise<any>{
+    return storageService.remove(STORAGE_KEY,id)
     }
-    function save(worker : Worker){
+    function save(worker : Worker) : Promise<Worker>{
     if(worker.id){
-     const idx = workers.findIndex(currWorker => currWorker.id === worker.id)
-        workers[idx] = worker
+     return storageService.put(STORAGE_KEY,worker)
     }
     else{
     const id = 'u'+utilService.makeId(3)
     worker.id = id
     worker.joinDate = Date.now()
-    workers.push(worker)
+    return storageService.post(STORAGE_KEY,worker)
     }
     }

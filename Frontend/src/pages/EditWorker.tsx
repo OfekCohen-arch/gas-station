@@ -9,8 +9,8 @@ export function EditWorker() {
   useEffect(() => {
     if (workerId) loadWorker(workerId);
   }, []);
-  function loadWorker(id: string) {
-    const workerData = workerService.getById(id);
+  async function loadWorker(id: string) {
+    const workerData = await workerService.getById(id);
     if (workerData) setWorkerToEdit(workerData);
   }
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {

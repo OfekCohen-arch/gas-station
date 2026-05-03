@@ -1,26 +1,31 @@
 import { useEffect, useState } from "react";
 import type { Shift } from "../types/shift";
-import type { Worker} from "../types/auth";
+import type { Worker } from "../types/auth";
 import { workerService } from "../services/worker.service";
 import { shiftService } from "../services/shift.service";
 import Swal from "sweetalert2";
 import { WorkersModal } from "./WorkersModal";
 
-interface Props{
-isAdmin: boolean,
-currWorker : Worker | null
+interface Props {
+  isAdmin: boolean;
+  currWorker: Worker | null;
 }
 
-
-export function ShiftTable({isAdmin,currWorker} : Props) {
+export function ShiftTable({ isAdmin, currWorker }: Props) {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  type ShiftType = { en: "morning"; he: "בוקר" } | { en: "evening"; he: "צהריים" } | { en: "night"; he: "לילה" };
-const [selectedSlot, setSelectedSlot] = useState<{ day: string; type: ShiftType | null }>({
-  day: '',
-  type: null
-});
+  type ShiftType =
+    | { en: "morning"; he: "בוקר" }
+    | { en: "evening"; he: "צהריים" }
+    | { en: "night"; he: "לילה" };
+  const [selectedSlot, setSelectedSlot] = useState<{
+    day: string;
+    type: ShiftType | null;
+  }>({
+    day: "",
+    type: null,
+  });
   const days = [
     { he: "יום ראשון", en: "sunday" },
     { he: "יום שני", en: "monday" },
@@ -30,15 +35,22 @@ const [selectedSlot, setSelectedSlot] = useState<{ day: string; type: ShiftType 
     { he: "יום שישי", en: "friday" },
     { he: "יום שבת", en: "saturday" },
   ] as const;
-  const shiftTypes = [{en:"morning",he:'בוקר'}, {en:"evening",he:'צהריים'}, {en:"night",he:'לילה'}] as const;
+  const shiftTypes = [
+    { en: "morning", he: "בוקר" },
+    { en: "evening", he: "צהריים" },
+    { en: "night", he: "לילה" },
+  ] as const;
 
   useEffect(() => {
-    setWorkers(workerService.query());
-    setShifts(shiftService.query());
+    loadData()
   }, []);
+  async function loadData() {
+    setWorkers([...await workerService.query()])
+    setShifts([...await shiftService.query()])
+  }
   function openModal(day: string, type: string) {
-    const shiftTypeObj = shiftTypes.find(t => t.en === type);
-    setSelectedSlot({ day, type:shiftTypeObj || null });
+    const shiftTypeObj = shiftTypes.find((t) => t.en === type);
+    setSelectedSlot({ day, type: shiftTypeObj || null });
     setIsModalOpen(true);
   }
   function getWorkerInShift(day: string, type: string) {
@@ -47,11 +59,16 @@ const [selectedSlot, setSelectedSlot] = useState<{ day: string; type: ShiftType 
 
     return workers.find((w) => w.id === shift.workerId);
   }
-  function onAddWorkerToShift(day: string, type: string, workerId: string) {
+  async function onAddWorkerToShift(
+    day: string,
+    type: string,
+    workerId: string,
+  ) {
     if (!workerId) return;
     const isWorkingSameDay = shiftTypes.some(
       (shiftType) =>
-        shiftType.en !== type && getWorkerInShift(day, shiftType.en)?.id === workerId,
+        shiftType.en !== type &&
+        getWorkerInShift(day, shiftType.en)?.id === workerId,
     );
 
     if (isWorkingSameDay) {
@@ -91,16 +108,16 @@ const [selectedSlot, setSelectedSlot] = useState<{ day: string; type: ShiftType 
     } else {
       shiftService.save(newShift);
     }
-    setShifts([...shiftService.query()]);
+    setShifts([...(await shiftService.query())]);
   }
-  function onRemoveShift(day: string, type: string) {
+  async function onRemoveShift(day: string, type: string) {
     const shift = shifts.find((s) => s.day === day && s.type === type);
     if (shift) {
       shiftService.remove(shift.id);
-      setShifts([...shiftService.query()]);
+      setShifts([...(await shiftService.query())]);
     }
   }
-
+  if(!shifts || !workers) return <div>טוען לוח משמרות...</div>
   return (
     <section className="shift-table">
       <table border={1} style={{ width: "100%", textAlign: "center" }}>
@@ -123,33 +140,46 @@ const [selectedSlot, setSelectedSlot] = useState<{ day: string; type: ShiftType 
               {days.map((day) => {
                 const worker = getWorkerInShift(day.en, type.en);
                 return (
-                  <td key={day.en} className={(!isAdmin && currWorker === worker)?'logged-worker': ''}>
+                  <td
+                    key={day.en}
+                    className={
+                      !isAdmin && currWorker?.id === worker?.id ? "logged-worker" : ""
+                    }
+                  >
                     {worker ? (
                       <div className="assigned-worker">
                         <span>{worker.firstName}</span>
-                        {isAdmin &&<div><button
-                          onClick={() => openModal(day.en, type.en)}
-                          style={{
-                            fontSize: "10px",
-                            display: "block",
-                            margin: "0 auto",
-                          }}
-                        >
-                          החלף
-                        </button>
-                        <button
-                          style={{
-                            fontSize: "10px",
-                            display: "block",
-                            margin: "0 auto",
-                          }}
-                          onClick={() => onRemoveShift(day.en, type.en)}
-                        >
-                          X
-                        </button></div>}
+                        {isAdmin && (
+                          <div>
+                            <button
+                              onClick={() => openModal(day.en, type.en)}
+                              style={{
+                                fontSize: "10px",
+                                display: "block",
+                                margin: "0 auto",
+                              }}
+                            >
+                              החלף
+                            </button>
+                            <button
+                              style={{
+                                fontSize: "10px",
+                                display: "block",
+                                margin: "0 auto",
+                              }}
+                              onClick={() => onRemoveShift(day.en, type.en)}
+                            >
+                              X
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ) : (
-                     isAdmin && <button onClick={() => openModal(day.en, type.en)}>+</button>
+                      isAdmin && (
+                        <button onClick={() => openModal(day.en, type.en)}>
+                          +
+                        </button>
+                      )
                     )}
                   </td>
                 );
@@ -158,18 +188,24 @@ const [selectedSlot, setSelectedSlot] = useState<{ day: string; type: ShiftType 
           ))}
         </tbody>
       </table>
-      {selectedSlot && <WorkersModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-        }}
-        day={selectedSlot.day}
-        type={selectedSlot.type!}
-        workers={workers}
-        onSelectWorker={(workerId) =>
-          onAddWorkerToShift(selectedSlot.day, selectedSlot.type!.en, workerId)
-        }
-      />}
+      {selectedSlot && (
+        <WorkersModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+          }}
+          day={selectedSlot.day}
+          type={selectedSlot.type!}
+          workers={workers}
+          onSelectWorker={(workerId) =>
+            onAddWorkerToShift(
+              selectedSlot.day,
+              selectedSlot.type!.en,
+              workerId,
+            )
+          }
+        />
+      )}
     </section>
   );
 }

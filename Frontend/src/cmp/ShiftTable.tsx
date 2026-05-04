@@ -6,16 +6,17 @@ import { shiftService } from "../services/shift.service";
 import Swal from "sweetalert2";
 import { WorkersModal } from "./WorkersModal";
 import { constraintService } from "../services/constraint.service";
+import { authService } from "../services/auth.service";
 
 interface Props {
-  isAdmin: boolean;
   currWorker: Worker | null;
 }
 
-export function ShiftTable({ isAdmin, currWorker }: Props) {
+export function ShiftTable({ currWorker }: Props) {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [constraints,setConstraints] = useState<Constraint[]>([])
+  const admin = authService.getLoggedInUser()
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   type ShiftType =
     | { en: "morning"; he: "בוקר" }
@@ -47,9 +48,17 @@ export function ShiftTable({ isAdmin, currWorker }: Props) {
     loadData()
   }, []);
   async function loadData() {
-    setWorkers([...await workerService.query()])
-    setShifts([...await shiftService.query()])
-    setConstraints([...await constraintService.query()])
+    const sId = currWorker?.stationId
+    if (!sId) return
+    
+    const workersData = await workerService.query(sId)
+    const shiftsData = await shiftService.query(sId)
+    const constraintsData = await constraintService.query(sId)
+    console.log(shiftsData);
+    
+    setWorkers([...workersData])
+    setShifts([...shiftsData])
+    setConstraints([...constraintsData])
   }
   function openModal(day: string, type: string) {
     const shiftTypeObj = shiftTypes.find((t) => t.en === type);
@@ -118,7 +127,8 @@ export function ShiftTable({ isAdmin, currWorker }: Props) {
         const shiftToUpdate = { ...existingShift, workerId };
         savedShift = await shiftService.save(shiftToUpdate);
     } else {
-        const newShift = { id: "", day, type, workerId };
+      const stationId = admin?.stationId
+        const newShift = { id: "", day, type, workerId, stationId};
         savedShift = await shiftService.save({...newShift} as Shift);
     }
 
@@ -141,7 +151,7 @@ export function ShiftTable({ isAdmin, currWorker }: Props) {
       
     }
   }
-  if(!shifts || !workers) return <div>טוען לוח משמרות...</div>
+  if(!shifts || !workers ||!currWorker) return <div>טוען לוח משמרות...</div>
   return (
     <section className="shift-table">
       <table border={1} style={{ width: "100%", textAlign: "center" }}>
@@ -166,10 +176,10 @@ export function ShiftTable({ isAdmin, currWorker }: Props) {
                 return (
                   <td
                     key={day.en}
-                    className={`shift-cell ${!isAdmin && currWorker?.id === worker?.id ? "logged-worker" : ""}`}
+                    className={`shift-cell ${!currWorker.isAdmin && currWorker?.id === worker?.id ? "logged-worker" : ""}`}
 
                     onClick={()=>{
-                        if(isAdmin) openModal(day.en,type.en)
+                        if(currWorker.isAdmin) openModal(day.en,type.en)
                     }}
                     
                   >
@@ -179,7 +189,7 @@ export function ShiftTable({ isAdmin, currWorker }: Props) {
                       </div>
                     ) : ''
                     }
-                    {isAdmin && worker && <button onClick={(event)=>{
+                    {currWorker.isAdmin && worker && <button onClick={(event)=>{
                         event.stopPropagation()
                         onRemoveShift(day.en,type.en)
                         }} className="remove-btn">X</button>}

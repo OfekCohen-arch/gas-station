@@ -30,7 +30,7 @@ export function EditWorker() {
     const stationId = admin.stationId
     const stationName = admin.stationName
     await workerService.save(workerToEdit as Worker,stationId,stationName)
-    navigate(`/admin`)
+    navigate(`/admin/${admin.id}`)
   }
   return (
     <section className="edit-worker">

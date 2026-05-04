@@ -12,25 +12,27 @@ export function AdminIndex(){
         loadWorkers()
     },[])
      async function loadWorkers(){
-     const workersData = await workerService.query()   
-     setWorkers(workersData)
+     const workersData = await workerService.query(admin?.stationId!)   
+     const onlyWorkers = workersData.filter(w=>!w.isAdmin)
+     setWorkers(onlyWorkers)
     }
-    function onRemoveWorker(id : string){
+    async function onRemoveWorker(id : string){
    try {
-        workerService.remove(id)
+       await workerService.remove(id)
         setWorkers((prev) => prev.filter(w => w.id !== id))
     } catch (err) {
         console.error('בעיה במחיקת עובד:', err)
         alert('לא ניתן למחוק את העובד כרגע')
     }
     }
+    if (!admin) return <div>מתבצעת התחברות...</div>
     return(
         <div>
             <h2>רשימת עובדים</h2>
             <button onClick={()=>{navigate(`/editWorker`)}}>הוספת עובד חדש</button>
         <ul>
         {
-        workers.filter(w=>w.stationId === admin?.stationId).map(worker=> !worker.isAdmin &&
+        workers.map(worker=>
             <li key={worker.id}>
             <article className="worker-card">
                 <div className="worker-info">

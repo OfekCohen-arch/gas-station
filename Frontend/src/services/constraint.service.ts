@@ -10,8 +10,9 @@ export const constraintService = {
 };
 const STORAGE_KEY = 'constraint'
 
-function query() : Promise<Constraint[]> {
-  return storageService.query(STORAGE_KEY)
+async function query(stationId: string) : Promise<Constraint[]> {
+  const constraints = await storageService.query(STORAGE_KEY)
+   return constraints.filter(constraint => constraint.stationId === stationId);
 }
 function save(constraint: Constraint) : Promise<Constraint> {
     return storageService.post(STORAGE_KEY,constraint)

@@ -11,8 +11,9 @@ export const shiftService = {
   remove,
 };
 
-function query() : Promise<Shift[]> {
-  return storageService.query(STORAGE_KEY)
+async function query(stationId: string) : Promise<Shift[]> {
+  const shifts = await storageService.query(STORAGE_KEY)
+  return shifts.filter(s=>s.stationId === stationId) as Shift[]
 }
 function save(shift: Shift) : Promise<Shift>{
   if (shift.id) {

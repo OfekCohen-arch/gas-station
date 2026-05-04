@@ -10,8 +10,9 @@ const STORAGE_KEY = 'worker'
         save
     }
 
-    async function query() : Promise<Worker[]>{
-    return storageService.query(STORAGE_KEY)    
+    async function query(stationId : string) : Promise<Worker[]>{
+    const workers = await storageService.query(STORAGE_KEY)
+    return workers.filter(w=>w.stationId === stationId)
     }
     async function getById(id: string) : Promise<Worker>{
     return storageService.get(STORAGE_KEY,id)

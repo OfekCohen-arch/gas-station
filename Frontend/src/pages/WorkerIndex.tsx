@@ -9,53 +9,62 @@ import { utilService } from "../services/util.service.ts";
 import { useParams } from "react-router-dom";
 
 export function WorkerIndex() {
-  const {workerId} = useParams()
+  const { workerId } = useParams();
 
   const [constraints, setConstraints] = useState<Constraint[]>([]);
   const [worker, setWorker] = useState<Worker | null>(null);
   useEffect(() => {
     if (workerId) loadData(workerId);
-  }, []);
+  }, [workerId]);
   async function loadData(workerId: string) {
     const w = await workerService.getById(workerId);
-    if (w) setWorker(w);
-    const demoConstraints = await constraintService.query();
-    if (demoConstraints) setConstraints(demoConstraints);
+    if (w) {
+      setWorker(w);
+      const data = await constraintService.query(w.stationId);
+      setConstraints(data || []);
+    }
   }
   async function onAddConstraint(day: string, type: string) {
-    const tempId = 'temp-' + utilService.makeId(3);
-    const stationId = worker?.stationId
-    const constraintToAdd = { id: tempId, workerId, day, type,stationId } as Constraint;
-    
-    setConstraints(prev => [...prev, constraintToAdd]);
+    const tempId = "temp-" + utilService.makeId(3);
+    const stationId = worker?.stationId;
+    const constraintToAdd = {
+      id: tempId,
+      workerId,
+      day,
+      type,
+      stationId,
+    } as Constraint;
+
+    setConstraints((prev) => [...prev, constraintToAdd]);
     const savedConstraint = await constraintService.save(constraintToAdd);
 
-    setConstraints(prev => 
-        prev.map(c => c.id === tempId ? savedConstraint : c)
+    setConstraints((prev) =>
+      prev.map((c) => (c.id === tempId ? savedConstraint : c)),
     );
   }
-  async function onRemoveConstraint(day: string,type:string) {
-     const con = await constraintService.getConstraint(workerId!,day,type)
-     if (!con || !con.id) {
-        console.warn('No constraint found to remove');
-        return;
+  async function onRemoveConstraint(day: string, type: string) {
+    const con = await constraintService.getConstraint(workerId!, day, type);
+    if (!con || !con.id) {
+      console.warn("No constraint found to remove");
+      return;
     }
-    setConstraints(prev => prev.filter(c => c.id !== con.id));
+    setConstraints((prev) => prev.filter((c) => c.id !== con.id));
     try {
-        await constraintService.remove(con.id);
+      await constraintService.remove(con.id);
     } catch (err) {
-        console.error('Failed to remove from DB', err);
-        const freshConstraints = await constraintService.query();
-        setConstraints(freshConstraints);
-        
+      console.error("Failed to remove from DB", err);
+      const freshConstraints = await constraintService.query(
+        worker?.stationId!,
+      );
+      setConstraints(freshConstraints);
+    }
   }
-}
-  if(!worker) return <div>פרטי עובד נטענים...</div>
+  if (!worker) return <div>פרטי עובד נטענים...</div>;
   return (
     <section className="worker-index">
       <h1>שלום {worker?.firstName}</h1>
       <h2>המשמרות שלי לשבוע הקרוב בתחנת {worker.stationName}</h2>
-      <ShiftTable isAdmin={false} currWorker={worker} />
+      <ShiftTable currWorker={worker} />
       <ConstraintTable
         constraints={constraints}
         worker={worker!}

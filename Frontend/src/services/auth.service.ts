@@ -14,7 +14,7 @@ getLoggedInUser,
 login,
 logout
 }
-async function signup(signupInfo: SignupInfo,isAdmin: boolean | true,stationId:string | null): Promise<Worker> {
+async function signup(signupInfo: SignupInfo, isAdmin: boolean = true, stationId: string | null): Promise<Worker> {
     const { data: authData, error: authError } = await supabase.auth.signUp({
         email: signupInfo.email,
         password: signupInfo.password,
@@ -24,6 +24,8 @@ async function signup(signupInfo: SignupInfo,isAdmin: boolean | true,stationId:s
         throw new Error(authError?.message || 'הרשמה נכשלה');
     }
 
+    const finalStationId = isAdmin ? authData.user.id : stationId;
+
     const newUser = {
         id: authData.user.id, 
         email: signupInfo.email,
@@ -32,9 +34,8 @@ async function signup(signupInfo: SignupInfo,isAdmin: boolean | true,stationId:s
         phone: signupInfo.phone,
         stationName: signupInfo.stationName,
         isAdmin: isAdmin,
-        stationId : stationId || null
+        stationId: finalStationId 
     };
-    
 
     const { data: workerData, error: workerError } = await supabase
         .from('workers')
@@ -47,10 +48,11 @@ async function signup(signupInfo: SignupInfo,isAdmin: boolean | true,stationId:s
         throw workerError;
     }
 
-    if(isAdmin)sessionStorage.setItem('loggedInUser', JSON.stringify(workerData));
+    if (isAdmin) sessionStorage.setItem('loggedInUser', JSON.stringify(workerData));
 
     return workerData as Worker;
 }
+
 
 function getLoggedInUser() : Worker | null{
     const user = sessionStorage.getItem('loggedInUser')

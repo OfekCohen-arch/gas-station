@@ -21,6 +21,7 @@ export function ConstraintTable({ worker, constraints, onAddConstraint,onRemoveC
     { en: "evening", he: "צהריים" },
     { en: "night", he: "לילה" },
   ] as const;
+
   async function onToggleConstraint(day: string,type: string,state: boolean){
   if(state === false){
   onAddConstraint(day,type)

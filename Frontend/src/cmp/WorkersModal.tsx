@@ -1,8 +1,6 @@
 
-import { useEffect } from "react";
 import type { Worker } from "../types/auth";
 import type { Constraint } from "../types/shift";
-import { supabase } from "../services/supabase.service";
 interface Props {
   isOpen: boolean;
   onClose: () => void;

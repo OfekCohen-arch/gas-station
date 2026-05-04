@@ -58,6 +58,11 @@ export function ShiftTable({ currWorker }: Props) {
         loadData(); 
       }
     )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'constraints', filter: `stationId=eq.${currWorker!.stationId}` },
+      () => loadData()
+    )
     .subscribe();
 
   return () => {

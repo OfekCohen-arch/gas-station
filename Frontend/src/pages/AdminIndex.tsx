@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { utilService } from "../services/util.service"
 import { useNavigate } from "react-router-dom"
 import { workerService } from "../services/worker.service"
 import type { Worker } from "../types/auth"
@@ -27,31 +26,40 @@ export function AdminIndex(){
     }
     if (!admin) return <div>מתבצעת התחברות...</div>
     return(
-        <div>
-            <h2>רשימת עובדים</h2>
-            <button onClick={()=>{navigate(`/editWorker`)}}>הוספת עובד חדש</button>
-        <ul>
-        {
-        workers.map(worker=>
-            <li key={worker.id}>
-            <article className="worker-card">
-                <div className="worker-info">
-            <p>{worker.firstName+' '+worker.lastName}</p>
-            <p>טלפון: {worker.phone}</p>
-            <p>  כתובת דוא"ל: {worker.email}</p>
-            <p>תחילת עבודה: {utilService.getDate(worker.joinDate)}</p>
-                </div>
-                <div className="worker-actions">
-                <button>צפייה</button>
-                <button onClick={()=>{onRemoveWorker(worker.id)}}>מחיקה</button>
-                <button onClick={()=>{navigate(`/editWorker/${worker.id}`)}}>עריכת פרטים</button>
-                </div>
-            
-            </article>
-            </li>
-        )
-        }
-        </ul>
+        <section className="admin-index main-layout">
+    <header className="admin-header">
+        <div className="title-section">
+            <h2>ניהול עובדים</h2>
+            <p>בתחנת {admin?.stationName}</p>
         </div>
+        <button className="add-worker-btn" onClick={() => navigate('/editWorker')}>
+            <span>+</span> הוספת עובד חדש
+        </button>
+    </header>
+
+    <div className="workers-grid">
+        {workers.map(worker => (
+            <article key={worker.id} className="worker-card">
+                <div className="worker-avatar">
+                    {worker.firstName.charAt(0)}{worker.lastName.charAt(0)}
+                </div>
+                
+                <div className="worker-details">
+                    <h3>{worker.firstName} {worker.lastName}</h3>
+                    <p className="worker-role">מתדלק / עובד חנות</p>
+                    <div className="contact-info">
+                        <span>📞 {worker.phone}</span>
+                        <span>✉️ {worker.email}</span>
+                    </div>
+                </div>
+
+                <div className="worker-actions">
+                    <button className="btn-edit" onClick={() => navigate(`/editWorker/${worker.id}`)}>עריכה</button>
+                    <button className="btn-delete" onClick={() => onRemoveWorker(worker.id)}>מחיקה</button>
+                </div>
+            </article>
+        ))}
+    </div>
+</section>
     )
 }

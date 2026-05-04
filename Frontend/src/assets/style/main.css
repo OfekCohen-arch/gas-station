@@ -8,7 +8,8 @@
 @import '../style/cmp/workers-modal.css';
 @import '../style/cmp/shift-table.css';
 @import './cmp/login.css';
-@import './cmp/app-header.css'
+@import './cmp/app-header.css';
+@import './cmp/signup.css';
 
 
 

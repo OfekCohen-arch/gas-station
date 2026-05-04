@@ -54,7 +54,6 @@ export function ShiftTable({ currWorker }: Props) {
     const workersData = await workerService.query(sId)
     const shiftsData = await shiftService.query(sId)
     const constraintsData = await constraintService.query(sId)
-    console.log(shiftsData);
     
     setWorkers([...workersData])
     setShifts([...shiftsData])

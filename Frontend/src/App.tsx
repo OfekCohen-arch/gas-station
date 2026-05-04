@@ -8,12 +8,14 @@ import { ShiftBoardPage } from './pages/ShiftBoardPage'
 import { WorkerIndex } from './pages/WorkerIndex'
 import { AdminIndex } from './pages/AdminIndex'
 import { Signup } from './pages/Signup'
+import { AppHeader } from './cmp/AppHeader'
 
 function App() {
 
   return (
     <Router>
     <section className='app'>
+      <AppHeader/>
       <Routes>
         <Route element={<Login/>} path='/'/>
         <Route element={<Signup/>} path='/signup'/>

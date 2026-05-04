@@ -1,22 +1,82 @@
-.edit-worker{
- display: flex;
- flex-direction: column;
- justify-content: center;   
- align-items: center;
-}
-.add-worker-form{
+.edit-worker {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    max-width: 400px;
-    margin-bottom: 20px;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    padding: 20px;
+    background-color: #f8fafc;
+    direction: rtl;
 }
-.add-worker-form input{
-     width: 100%;      
-    padding: 12px;     
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box; 
-    font-size: 16px;
-    text-align: right;
+
+.edit-worker h1 {
+    color: #1e293b;
+    margin-bottom: 25px;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.add-worker-form {
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    border: 1px solid #e2e8f0;
+}
+.add-worker-form div{
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+.add-worker-form input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    background-color: #f9fafb;
+    transition: all 0.3s ease;
+}
+
+.add-worker-form input:focus {
+    outline: none;
+    border-color: #2563eb;
+    background-color: white;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.add-worker-form button {
+    margin-top: 10px;
+    padding: 14px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.add-worker-form button:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.add-worker-form button:active {
+    transform: scale(0.98);
+}
+
+.auth-fields-group {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding-top: 10px;
+    border-top: 1px dashed #e2e8f0;
 }

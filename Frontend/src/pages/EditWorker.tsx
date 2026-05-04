@@ -61,9 +61,7 @@ export function EditWorker() {
           onChange={handleChange}
         />
         {!workerId && (
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "10px" }}
-          >
+          <div>
             <input
               type="email"
               name="email"

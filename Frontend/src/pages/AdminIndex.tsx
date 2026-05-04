@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { workerService } from "../services/worker.service"
 import type { Worker } from "../types/auth"
 import { authService } from "../services/auth.service"
+import Swal from "sweetalert2"
 export function AdminIndex(){
     const [workers,setWorkers] = useState<Worker[]>([])
     const admin = authService.getLoggedInUser()
@@ -17,6 +18,17 @@ export function AdminIndex(){
     }
     async function onRemoveWorker(id : string){
    try {
+    const result = await Swal.fire({
+            title: 'שים לב!',
+            text: 'האם אתה בטוח שהינך רוצה למחוק עובד זה?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'כן, מחק עובד זה',
+            cancelButtonText: 'ביטול'
+        })
+        if(!result.isConfirmed) return
        await workerService.remove(id)
         setWorkers((prev) => prev.filter(w => w.id !== id))
     } catch (err) {

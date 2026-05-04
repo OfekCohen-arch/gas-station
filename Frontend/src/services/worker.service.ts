@@ -19,7 +19,7 @@ const STORAGE_KEY = 'worker'
     async function remove(id: string) : Promise<any>{
     return storageService.remove(STORAGE_KEY,id)
     }
-    function save(worker : Worker) : Promise<Worker>{
+    function save(worker : Worker,stationId : string,stationName : string) : Promise<Worker>{
     if(worker.id){
      return storageService.put(STORAGE_KEY,worker)
     }
@@ -27,6 +27,8 @@ const STORAGE_KEY = 'worker'
     const id = 'u'+utilService.makeId(3)
     worker.id = id
     worker.joinDate = Date.now()
+    worker.stationId = stationId
+    worker.stationName = stationName
     return storageService.post(STORAGE_KEY,worker)
     }
     }

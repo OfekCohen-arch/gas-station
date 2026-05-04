@@ -2,11 +2,14 @@ import React, { useEffect, useState } from "react";
 import type { Worker } from "../types/auth";
 import { useNavigate, useParams } from "react-router-dom";
 import { workerService } from "../services/worker.service";
+import { authService } from "../services/auth.service";
+import Swal from "sweetalert2";
 
 export function EditWorker() {
   const { workerId } = useParams();
   const navigate = useNavigate()
   const [workerToEdit, setWorkerToEdit] = useState<Partial<Worker>>({});
+  const admin  = authService.getLoggedInUser()
   useEffect(() => {
     if (workerId) loadWorker(workerId);
   }, []);
@@ -21,7 +24,12 @@ export function EditWorker() {
   }
   async function handleSubmit(ev: React.FormEvent<HTMLFormElement>) {
     ev.preventDefault();
-    await workerService.save(workerToEdit as Worker)
+    if(!admin){
+    return Swal.fire('שגיאה', 'עליך להיות מחובר כדי להוסיף עובד', 'error')
+    }
+    const stationId = admin.stationId
+    const stationName = admin.stationName
+    await workerService.save(workerToEdit as Worker,stationId,stationName)
     navigate(`/admin`)
   }
   return (

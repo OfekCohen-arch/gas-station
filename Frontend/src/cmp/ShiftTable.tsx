@@ -6,6 +6,7 @@ import { shiftService } from "../services/shift.service";
 import Swal from "sweetalert2";
 import { WorkersModal } from "./WorkersModal";
 import { constraintService } from "../services/constraint.service";
+import { supabase } from "../services/supabase.service";
 
 interface Props {
   currWorker: Worker | null;
@@ -44,6 +45,24 @@ export function ShiftTable({ currWorker }: Props) {
 
   useEffect(() => {
     loadData()
+    const channel = supabase
+    .channel('table-db-changes')  
+    .on(
+      'postgres_changes', 
+      { 
+        event: '*', 
+        schema: 'public', 
+        table: 'shifts'
+      }, 
+      () => {        
+        loadData(); 
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
   }, []);
   async function loadData() {
     const sId = currWorker?.stationId

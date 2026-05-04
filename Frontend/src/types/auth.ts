@@ -6,7 +6,6 @@ export interface Worker{
   email: string;           
   phone: string;             
   joinDate: number;    
-  imgUrl?: string;
   password: string;         
   isAdmin : boolean;
   stationId: string;

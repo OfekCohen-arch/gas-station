@@ -10,7 +10,7 @@ export function Signup(){
         password: '',
         firstName: '',
         lastName: '',
-        stationName: '' // שם התחנה החדשה
+        stationName: ''
     });
   const navigate = useNavigate()
     const handleChange = (ev : React.ChangeEvent<HTMLInputElement>) => {
@@ -21,8 +21,8 @@ export function Signup(){
     const onSignup = async (ev: React.ChangeEvent<HTMLFormElement>) => {
         ev.preventDefault();
        try {
-            await authService.signup(signupInfo);
-            navigate('/admin'); // העברה ללוח הבקרה אחרי הרשמה
+            const admin = await authService.signup(signupInfo,true,null);
+            navigate(`/admin/${admin.id}`); 
         } catch (err) {
             Swal.fire('שגיאה', 'לא ניתן היה להשלים את ההרשמה', 'error');
         } 

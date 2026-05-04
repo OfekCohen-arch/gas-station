@@ -1,8 +1,5 @@
 import type { Shift } from "../types/shift";
-import { storageService } from "./async-storage.service.ts";
-import { utilService } from "./util.service.ts";
-
-const STORAGE_KEY = 'shift'
+import { supabase } from "./supabase.service.ts";
 
 export const shiftService = {
   query,
@@ -12,21 +9,52 @@ export const shiftService = {
 };
 
 async function query(stationId: string) : Promise<Shift[]> {
-  const shifts = await storageService.query(STORAGE_KEY)
-  return shifts.filter(s=>s.stationId === stationId) as Shift[]
+  const {data,error} = await supabase
+  .from('shifts')
+  .select('*')
+  .eq('stationId',stationId)
+  if(error) throw error
+  return data as Shift[]
 }
-function save(shift: Shift) : Promise<Shift>{
+async function save(shift: Shift) : Promise<Shift>{
   if (shift.id) {
-    return storageService.put(STORAGE_KEY,shift)
+    const { id, ...updateData } = shift;
+    const {data,error} = await supabase
+    .from('shifts')
+    .update(updateData)
+    .eq('id',shift.id)
+    .select('*')
+    .single()
+    if(error) throw error
+    return data as Shift
   }
   else{
-    shift.id = 's'+utilService.makeId(3)
-    return storageService.post(STORAGE_KEY,shift)
+    const { id, ...dataToInsert } = shift;
+    const {data,error} = await supabase
+    .from('shifts')
+    .insert([dataToInsert])
+    .select()
+    .single()
+    if(error) throw error
+    return data as Shift
   }
 }
-function getById(id: string) : Promise<Shift> {
-return storageService.get(STORAGE_KEY,id)
+async function getById(id: string) : Promise<Shift> {
+const {data,error} = await supabase
+.from('shifts')
+.select()
+.eq('id',id)
+.single()
+if(error) throw error
+return data as Shift
 }
-function remove(shiftId: string) : Promise<any> {
-return storageService.remove(STORAGE_KEY,shiftId)
+async function remove(shiftId: string) : Promise<Shift> {
+const {data,error} = await supabase
+.from('shifts')
+.delete()
+.select()
+.eq('id',shiftId)
+.single()
+if(error) throw error
+return data as Shift
 }

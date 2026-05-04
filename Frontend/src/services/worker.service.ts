@@ -1,7 +1,7 @@
 import type { Worker } from "../types/auth"
 import { storageService } from "./async-storage.service"
-import { utilService } from "./util.service"
-const STORAGE_KEY = 'worker'
+import { authService } from "./auth.service"
+import { supabase } from "./supabase.service"
 
     export const workerService = {
         query,
@@ -11,11 +11,25 @@ const STORAGE_KEY = 'worker'
     }
 
     async function query(stationId : string) : Promise<Worker[]>{
-    const workers = await storageService.query(STORAGE_KEY)
-    return workers.filter(w=>w.stationId === stationId)
+    const {data,error} = await supabase.from('workers')
+    .select('*')
+    .eq('stationId', stationId)
+    if (error) {
+        console.error('Error fetching workers:', error)
+        return []
     }
-    async function getById(id: string) : Promise<Worker>{
-    return storageService.get(STORAGE_KEY,id)
+    return data
+    }
+    async function getById(id: string) : Promise<Worker | null>{
+    const {data,error} = await supabase.from('workers')
+    .select('*')
+    .eq('id',id)
+    .single()
+    if (error) {
+        console.error(`Error fetching worker by id: ${id}`, error)
+        return null
+    }
+    return data
     }
     async function remove(id: string) : Promise<any>{
     const shifts = await storageService.query('shift')
@@ -27,19 +41,31 @@ const STORAGE_KEY = 'worker'
     
     const constraintPromises = workerConstraints.map(c => storageService.remove('constraint', c.id))
     await Promise.all(constraintPromises)
-    return storageService.remove(STORAGE_KEY,id)
+    const { error } = await supabase
+        .from('workers')
+        .delete()
+        .eq('id', id);
+
+    if (error) throw error;
     }
-    function save(worker : Worker,stationId : string,stationName : string) : Promise<Worker>{
+    async function save(worker : Worker,stationId : string,stationName : string) : Promise<Worker>{
     if(worker.id){
-     return storageService.put(STORAGE_KEY,worker)
+        const {id,...updatedData} = worker
+     const { data,error } = await supabase
+        .from('workers')
+        .update(updatedData)
+        .eq('id',worker.id)
+        .select()
+        .single()
+
+    if (error) throw error;
+    return data
     }
     else{
-    const id = 'u'+utilService.makeId(3)
-    worker.id = id
-    worker.joinDate = Date.now()
-    worker.stationId = stationId
-    worker.stationName = stationName
-    worker.isAdmin = false
-    return storageService.post(STORAGE_KEY,worker)
+    worker.stationId = stationId;
+    worker.stationName = stationName;
+    const {email,firstName,lastName,phone,password} = worker
+    const newWorker = await authService.signup({email,firstName,lastName,phone,password,stationName},false,stationId)
+     return newWorker
     }
     }

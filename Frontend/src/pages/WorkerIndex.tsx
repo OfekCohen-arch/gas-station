@@ -5,8 +5,8 @@ import { ConstraintTable } from "../cmp/ConstraintTable.tsx";
 import { workerService } from "../services/worker.service.ts";
 import { ShiftTable } from "../cmp/ShiftTable.tsx";
 import { constraintService } from "../services/constraint.service.ts";
-import { utilService } from "../services/util.service.ts";
 import { useParams } from "react-router-dom";
+import Swal from "sweetalert2";
 
 export function WorkerIndex() {
   const { workerId } = useParams();
@@ -24,41 +24,44 @@ export function WorkerIndex() {
       setConstraints(data || []);
     }
   }
-  async function onAddConstraint(day: string, type: string) {
-    const tempId = "temp-" + utilService.makeId(3);
+ async function onAddConstraint(day: string, type: string) {
     const stationId = worker?.stationId;
+    if (!stationId) return;
+
     const constraintToAdd = {
-      id: tempId,
       workerId,
       day,
       type,
       stationId,
     } as Constraint;
 
-    setConstraints((prev) => [...prev, constraintToAdd]);
-    const savedConstraint = await constraintService.save(constraintToAdd);
-
-    setConstraints((prev) =>
-      prev.map((c) => (c.id === tempId ? savedConstraint : c)),
-    );
-  }
-  async function onRemoveConstraint(day: string, type: string) {
-    const con = await constraintService.getConstraint(workerId!, day, type);
-    if (!con || !con.id) {
-      console.warn("No constraint found to remove");
-      return;
-    }
-    setConstraints((prev) => prev.filter((c) => c.id !== con.id));
     try {
-      await constraintService.remove(con.id);
+        const savedConstraint = await constraintService.save(constraintToAdd);
+        setConstraints((prev) => [...prev, savedConstraint]);
     } catch (err) {
-      console.error("Failed to remove from DB", err);
-      const freshConstraints = await constraintService.query(
-        worker?.stationId!,
-      );
-      setConstraints(freshConstraints);
+        console.error("Failed to add constraint:", err);
+        Swal.fire("שגיאה בהוספת האילוץ");
     }
-  }
+}
+
+  async function onRemoveConstraint(day: string, type: string) {
+    const con = constraints.find(c => c.day === day && c.type === type && c.workerId === workerId);
+    
+    if (!con || !con.id) {
+        console.warn("No constraint found to remove");
+        return;
+    }
+
+    setConstraints((prev) => prev.filter((c) => c.id !== con.id));
+    
+    try {
+        await constraintService.remove(con.id);
+    } catch (err) {
+        console.error("Failed to remove from DB", err);
+        loadData(workerId!); 
+    }
+}
+
   if (!worker) return <div>פרטי עובד נטענים...</div>;
   return (
     <section className="worker-index">

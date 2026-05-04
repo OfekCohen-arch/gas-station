@@ -6,7 +6,6 @@ import { shiftService } from "../services/shift.service";
 import Swal from "sweetalert2";
 import { WorkersModal } from "./WorkersModal";
 import { constraintService } from "../services/constraint.service";
-import { authService } from "../services/auth.service";
 
 interface Props {
   currWorker: Worker | null;
@@ -16,7 +15,6 @@ export function ShiftTable({ currWorker }: Props) {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [constraints,setConstraints] = useState<Constraint[]>([])
-  const admin = authService.getLoggedInUser()
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   type ShiftType =
     | { en: "morning"; he: "בוקר" }
@@ -126,8 +124,8 @@ export function ShiftTable({ currWorker }: Props) {
         const shiftToUpdate = { ...existingShift, workerId };
         savedShift = await shiftService.save(shiftToUpdate);
     } else {
-      const stationId = admin?.stationId
-        const newShift = { id: "", day, type, workerId, stationId};
+      const stationId = currWorker?.stationId
+        const newShift = { day, type, workerId, stationId};
         savedShift = await shiftService.save({...newShift} as Shift);
     }
 

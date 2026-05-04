@@ -1,5 +1,5 @@
 import type { Constraint } from "../types/shift";
-import { storageService } from "./async-storage.service";
+import { supabase } from "./supabase.service";
 
 
 export const constraintService = {
@@ -8,23 +8,57 @@ export const constraintService = {
   remove,
   getConstraint
 };
-const STORAGE_KEY = 'constraint'
 
 async function query(stationId: string) : Promise<Constraint[]> {
-  const constraints = await storageService.query(STORAGE_KEY)
-   return constraints.filter(constraint => constraint.stationId === stationId);
+  const {data,error} = await supabase
+  .from('constraints')
+  .select()
+  .eq('stationId',stationId)
+  if(error) throw error
+  return data
+
 }
-function save(constraint: Constraint) : Promise<Constraint> {
-    return storageService.post(STORAGE_KEY,constraint)
+async function save(constraint: Constraint) : Promise<Constraint> {
+    if (constraint.id) {
+        const { id, ...updateData } = constraint;
+        const {data,error} = await supabase
+        .from('constraints')
+        .update(updateData)
+        .eq('id',constraint.id)
+        .select('*')
+        .single()
+        if(error) throw error
+        return data as Constraint
+      }
+      else{
+        const { id, ...dataToInsert } = constraint;
+        const {data,error} = await supabase
+        .from('constraints')
+        .insert([dataToInsert])
+        .select()
+        .single()
+        if(error) throw error
+        return data as Constraint
+      }
 }
-function remove(constraintId : string) : Promise<any>{
-   return storageService.remove(STORAGE_KEY,constraintId)
+async function remove(constraintId : string) : Promise<any>{
+  const {data,error} = await supabase
+  .from('constraints')
+  .delete()
+  .select()
+  .eq('id',constraintId)
+  .single()
+  if(error) throw error
+  return data as Constraint
 }
 async function getConstraint(workerId: string, day: string, type: string) {
-    const constraints = await storageService.query(STORAGE_KEY);
-    return constraints.find(c => 
-        c.workerId === workerId && 
-        c.day === day && 
-        c.type === type
-    );
+    const {data,error} = await supabase
+  .from('constraints')
+  .select()
+  .eq('workerId',workerId)
+  .eq('day',day)
+  .eq('type',type)
+  .maybeSingle()
+  if(error) throw error
+  return data
 }

@@ -18,10 +18,10 @@ export function EditWorker() {
     let value = event.target.value;
     setWorkerToEdit((worker) => ({ ...worker, [field]: value }));
   }
-  function handleSubmit(ev: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(ev: React.FormEvent<HTMLFormElement>) {
     ev.preventDefault();
-    workerService.save(workerToEdit as Worker)
-    navigate(`/dashboard`)
+    await workerService.save(workerToEdit as Worker)
+    navigate(`/admin`)
   }
   return (
     <section className="edit-worker">

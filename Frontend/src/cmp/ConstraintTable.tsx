@@ -1,4 +1,3 @@
-import { constraintService } from "../services/constraint.service";
 import type { Worker } from "../types/auth";
 import type { Constraint } from "../types/shift";
 interface Props {
@@ -60,7 +59,7 @@ export function ConstraintTable({ worker, constraints, onAddConstraint,onRemoveC
                 return (
                   <td
                     key={day.en}
-                    className={hasConstraint ? "constrained" : ""}
+                    className={`shift-cell ${hasConstraint ? "constrained" : ""}`}
                     onClick={() => onToggleConstraint(day.en, type.en,hasConstraint)}
                   >
                     {hasConstraint ? '❌' : ''}

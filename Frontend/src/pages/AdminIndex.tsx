@@ -3,7 +3,7 @@ import { utilService } from "../services/util.service"
 import { useNavigate } from "react-router-dom"
 import { workerService } from "../services/worker.service"
 import type { Worker } from "../types/auth"
-export function AdminDashboard(){
+export function AdminIndex(){
     const [workers,setWorkers] = useState<Worker[]>([])
     const navigate = useNavigate()
     useEffect(()=>{

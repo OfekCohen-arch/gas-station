@@ -6,9 +6,10 @@ import { workerService } from "../services/worker.service.ts";
 import { ShiftTable } from "../cmp/ShiftTable.tsx";
 import { constraintService } from "../services/constraint.service.ts";
 import { utilService } from "../services/util.service.ts";
+import { useParams } from "react-router-dom";
 
 export function WorkerIndex() {
-  const workerId = "u101";
+  const {workerId} = useParams()
 
   const [constraints, setConstraints] = useState<Constraint[]>([]);
   const [worker, setWorker] = useState<Worker | null>(null);
@@ -23,7 +24,7 @@ export function WorkerIndex() {
   }
   async function onAddConstraint(day: string, type: string) {
     const tempId = 'temp-' + utilService.makeId(3);
-    const constraintToAdd = { id: tempId, workerId, day, type };
+    const constraintToAdd = { id: tempId, workerId, day, type } as Constraint;
     
     setConstraints(prev => [...prev, constraintToAdd]);
     const savedConstraint = await constraintService.save(constraintToAdd);
@@ -33,7 +34,7 @@ export function WorkerIndex() {
     );
   }
   async function onRemoveConstraint(day: string,type:string) {
-     const con = await constraintService.getConstraint(workerId,day,type)
+     const con = await constraintService.getConstraint(workerId!,day,type)
      if (!con || !con.id) {
         console.warn('No constraint found to remove');
         return;

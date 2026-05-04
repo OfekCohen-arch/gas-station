@@ -3,8 +3,10 @@ import { utilService } from "../services/util.service"
 import { useNavigate } from "react-router-dom"
 import { workerService } from "../services/worker.service"
 import type { Worker } from "../types/auth"
+import { authService } from "../services/auth.service"
 export function AdminIndex(){
     const [workers,setWorkers] = useState<Worker[]>([])
+    const admin = authService.getLoggedInUser()
     const navigate = useNavigate()
     useEffect(()=>{
         loadWorkers()
@@ -28,7 +30,7 @@ export function AdminIndex(){
             <button onClick={()=>{navigate(`/editWorker`)}}>הוספת עובד חדש</button>
         <ul>
         {
-        workers.map(worker=> !worker.isAdmin &&
+        workers.filter(w=>w.stationId === admin?.stationId).map(worker=> !worker.isAdmin &&
             <li key={worker.id}>
             <article className="worker-card">
                 <div className="worker-info">

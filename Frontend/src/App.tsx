@@ -17,7 +17,7 @@ function App() {
       <Routes>
         <Route element={<Login/>} path='/'/>
         <Route element={<Signup/>} path='/signup'/>
-        <Route element={<AdminIndex/>} path='/admin'/>
+        <Route element={<AdminIndex/>} path='/admin/:workerId'/>
         <Route element={<EditWorker/>} path='/editWorker'/>
         <Route element={<EditWorker/>} path='/editWorker/:workerId'/>
         <Route element={<ShiftBoardPage/>} path='/shiftBoard'/>

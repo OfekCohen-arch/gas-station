@@ -29,6 +29,7 @@ const STORAGE_KEY = 'worker'
     worker.joinDate = Date.now()
     worker.stationId = stationId
     worker.stationName = stationName
+    worker.isAdmin = false
     return storageService.post(STORAGE_KEY,worker)
     }
     }

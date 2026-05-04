@@ -11,7 +11,9 @@ interface SignupInfo {
 }
 export const authService = {
 signup,
-getLoggedInUser
+getLoggedInUser,
+login,
+logout
 }
 async function signup(signupInfo : SignupInfo) : Promise<Worker> {
     const stationId = 'ST-' + utilService.makeId(5);
@@ -39,4 +41,24 @@ async function signup(signupInfo : SignupInfo) : Promise<Worker> {
 function getLoggedInUser() : Worker | null{
     const user = sessionStorage.getItem('loggedInUser')
     return user ? JSON.parse(user) : null
+}
+
+async function login(credentials: { email: string; password: string }): Promise<Worker> {
+    const workers = await storageService.query('worker');
+
+    const worker = workers.find(w => 
+        w.email === credentials.email && 
+        w.password === credentials.password
+    );
+
+    if (!worker) {
+        throw new Error('שם משתמש או סיסמה שגויים');
+    }
+    sessionStorage.setItem('loggedInUser', JSON.stringify(worker));
+
+    return worker;
+}
+
+async function logout() {
+    sessionStorage.removeItem('loggedInUser');
 }

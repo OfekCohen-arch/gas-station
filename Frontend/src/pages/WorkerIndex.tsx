@@ -24,7 +24,8 @@ export function WorkerIndex() {
   }
   async function onAddConstraint(day: string, type: string) {
     const tempId = 'temp-' + utilService.makeId(3);
-    const constraintToAdd = { id: tempId, workerId, day, type } as Constraint;
+    const stationId = worker?.stationId
+    const constraintToAdd = { id: tempId, workerId, day, type,stationId } as Constraint;
     
     setConstraints(prev => [...prev, constraintToAdd]);
     const savedConstraint = await constraintService.save(constraintToAdd);
@@ -53,7 +54,7 @@ export function WorkerIndex() {
   return (
     <section className="worker-index">
       <h1>שלום {worker?.firstName}</h1>
-      <h2>המשמרות שלי לשבוע הקרוב</h2>
+      <h2>המשמרות שלי לשבוע הקרוב בתחנת {worker.stationName}</h2>
       <ShiftTable isAdmin={false} currWorker={worker} />
       <ConstraintTable
         constraints={constraints}

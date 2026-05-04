@@ -7,6 +7,7 @@ import { EditWorker } from './pages/EditWorker'
 import { ShiftBoardPage } from './pages/ShiftBoardPage'
 import { WorkerIndex } from './pages/WorkerIndex'
 import { AdminIndex } from './pages/AdminIndex'
+import { Signup } from './pages/Signup'
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
     <section className='app'>
       <Routes>
         <Route element={<Login/>} path='/'/>
+        <Route element={<Signup/>} path='/signup'/>
         <Route element={<AdminIndex/>} path='/admin'/>
         <Route element={<EditWorker/>} path='/editWorker'/>
         <Route element={<EditWorker/>} path='/editWorker/:workerId'/>

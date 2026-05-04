@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import type { Worker } from "../types/auth";
 import { useNavigate, useParams } from "react-router-dom";
 import { workerService } from "../services/worker.service";
+
 export function EditWorker() {
   const { workerId } = useParams();
   const navigate = useNavigate()

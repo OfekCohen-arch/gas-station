@@ -28,13 +28,13 @@ export function AdminIndex(){
             <button onClick={()=>{navigate(`/editWorker`)}}>הוספת עובד חדש</button>
         <ul>
         {
-        workers.map(worker=>
+        workers.map(worker=> !worker.isAdmin &&
             <li key={worker.id}>
             <article className="worker-card">
                 <div className="worker-info">
             <p>{worker.firstName+' '+worker.lastName}</p>
             <p>טלפון: {worker.phone}</p>
-            <p> {worker.email} :כתובת דוא"ל </p>
+            <p>  כתובת דוא"ל: {worker.email}</p>
             <p>תחילת עבודה: {utilService.getDate(worker.joinDate)}</p>
                 </div>
                 <div className="worker-actions">

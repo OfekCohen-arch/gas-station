@@ -1,13 +1,4 @@
-export interface User{
-id: string,
-name: string,
-role: 'admin' | 'employee',
-email: string  
-}
-export interface AuthResponse {
-  token: string;
-  user: User;
-}
+
 export interface Worker{
   id: string;              
   firstName: string;      
@@ -17,5 +8,7 @@ export interface Worker{
   joinDate: number;    
   imgUrl?: string;
   password: string;         
-  role?: 'admin' | 'employee'; 
+  isAdmin : boolean;
+  stationId: string;
+  stationName: string;
 }

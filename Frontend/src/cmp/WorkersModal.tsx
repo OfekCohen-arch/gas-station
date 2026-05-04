@@ -42,7 +42,7 @@ saturday:'יום שבת',
         c.day === day && 
         c.type === type.en
     );
-          return <button
+           return (!worker.isAdmin) ? <button
               key={worker.id}
               onClick={() => {
                 onSelectWorker(worker.id,isConstrainted);
@@ -53,6 +53,7 @@ saturday:'יום שבת',
               {worker.firstName + " " + worker.lastName}
               {isConstrainted && <span className="warning-icon" title="העובד הגיש אילוץ"> ⚠️</span>}
             </button>
+            : ''
           })}
         </ul>
         <button className="cancel-btn" onClick={onClose}>ביטול</button>

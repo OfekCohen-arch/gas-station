@@ -7,6 +7,7 @@ import { ShiftTable } from "../cmp/ShiftTable.tsx";
 import { constraintService } from "../services/constraint.service.ts";
 import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
+import { LoadingSpinner } from "../cmp/LoadingSpinner.tsx";
 
 export function WorkerIndex() {
   const { workerId } = useParams();
@@ -62,7 +63,7 @@ export function WorkerIndex() {
     }
 }
 
-  if (!worker) return <div>פרטי עובד נטענים...</div>;
+  if (!worker) return <LoadingSpinner/>
   return (
     <section className="worker-index">
       <h1>שלום {worker?.firstName}</h1>

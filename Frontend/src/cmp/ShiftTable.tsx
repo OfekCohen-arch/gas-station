@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 import { WorkersModal } from "./WorkersModal";
 import { constraintService } from "../services/constraint.service";
 import { supabase } from "../services/supabase.service";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 interface Props {
   currWorker: Worker | null;
@@ -172,7 +173,7 @@ export function ShiftTable({ currWorker }: Props) {
       
     }
   }
-  if(!shifts || !workers ||!currWorker) return <div>טוען לוח משמרות...</div>
+  if(!shifts || !workers ||!currWorker) return <LoadingSpinner/>
   return (
     <section className="shift-table">
       <table border={1} style={{ width: "100%", textAlign: "center" }}>

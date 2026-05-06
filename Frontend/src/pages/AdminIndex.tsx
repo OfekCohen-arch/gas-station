@@ -4,6 +4,7 @@ import { workerService } from "../services/worker.service"
 import type { Worker } from "../types/auth"
 import { authService } from "../services/auth.service"
 import Swal from "sweetalert2"
+import { LoadingSpinner } from "../cmp/LoadingSpinner"
 export function AdminIndex(){
     const [workers,setWorkers] = useState<Worker[]>([])
     const admin = authService.getLoggedInUser()
@@ -36,7 +37,7 @@ export function AdminIndex(){
         alert('לא ניתן למחוק את העובד כרגע')
     }
     }
-    if (!admin) return <div>מתבצעת התחברות...</div>
+    if (!admin) return <LoadingSpinner/>
     return(
         <section className="admin-index main-layout">
     <header className="admin-header">

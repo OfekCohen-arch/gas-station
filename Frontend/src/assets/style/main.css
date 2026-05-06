@@ -12,5 +12,8 @@
 @import './cmp/signup.css';
 @import './cmp/loading-spinner.css';
 
+/*set up*/
+@import './setup/mq.css';
+
 
 

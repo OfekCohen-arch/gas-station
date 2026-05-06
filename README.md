@@ -21,3 +21,10 @@ A modern, multi-tenant SaaS platform built with a **Serverless architecture**, d
 * **Backend/Database:** Supabase (PostgreSQL).
 * **Real-time:** Supabase Channels (WebSockets).
 * **Security:** Supabase Auth & Row Level Security (RLS).
+
+* ## Getting Started
+1. Clone the repo
+2. Run `npm install`
+3. Create a `.env` file with your Supabase credentials
+4. Run `npm run dev`
+

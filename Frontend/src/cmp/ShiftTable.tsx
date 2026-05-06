@@ -176,6 +176,7 @@ export function ShiftTable({ currWorker }: Props) {
   if(!shifts || !workers ||!currWorker) return <LoadingSpinner/>
   return (
     <section className="shift-table">
+      <div className="table-container">
       <table border={1} style={{ width: "100%", textAlign: "center" }}>
         <thead>
           <tr>
@@ -222,6 +223,7 @@ export function ShiftTable({ currWorker }: Props) {
           ))}
         </tbody>
       </table>
+      </div>
       {selectedSlot && (
         <WorkersModal
           isOpen={isModalOpen}

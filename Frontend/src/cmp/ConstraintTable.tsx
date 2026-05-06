@@ -33,6 +33,7 @@ export function ConstraintTable({ worker, constraints, onAddConstraint,onRemoveC
   return (
     <section>
       <h2>הגשת אילוצים לשבוע הבא</h2>
+      <div className="table-container">
       <table border={1} style={{ width: "100%", textAlign: "center" }}>
         <thead>
           <tr>
@@ -69,8 +70,9 @@ export function ConstraintTable({ worker, constraints, onAddConstraint,onRemoveC
               })}
             </tr>
           ))}
-        </tbody>
+        </tbody>  
       </table>
+      </div>
     </section>
   );
 }

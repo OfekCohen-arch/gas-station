@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Shift,Constraint } from "../types/shift";
+import type { Shift, Constraint } from "../types/shift";
 import type { Worker } from "../types/auth";
 import { workerService } from "../services/worker.service";
 import { shiftService } from "../services/shift.service";
@@ -16,7 +16,7 @@ interface Props {
 export function ShiftTable({ currWorker }: Props) {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [workers, setWorkers] = useState<Worker[]>([]);
-  const [constraints,setConstraints] = useState<Constraint[]>([])
+  const [constraints, setConstraints] = useState<Constraint[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   type ShiftType =
     | { en: "morning"; he: "בוקר" }
@@ -45,43 +45,160 @@ export function ShiftTable({ currWorker }: Props) {
   ] as const;
 
   useEffect(() => {
-    loadData()
+    if (!currWorker?.stationId) return;
+    loadData();
     const channel = supabase
-    .channel('table-db-changes')  
-    .on(
-      'postgres_changes', 
-      { 
-        event: '*', 
-        schema: 'public', 
-        table: 'shifts'
-      }, 
-      () => {        
-        loadData(); 
-      }
-    )
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'constraints', filter: `stationId=eq.${currWorker!.stationId}` },
-      () => loadData()
-    )
-    .subscribe();
+      .channel("table-db-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "shifts",
+        },
+        () => {
+          loadData();
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "constraints",
+          filter: `stationId=eq.${currWorker!.stationId}`,
+        },
+        () => loadData(),
+      )
+      .subscribe();
 
-  return () => {
-    supabase.removeChannel(channel);
-  };
-  }, []);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currWorker?.stationId]);
   async function loadData() {
-    const sId = currWorker?.stationId
-    if (!sId) return
-    
-    const workersData = await workerService.query(sId)
-    const shiftsData = await shiftService.query(sId)
-    const constraintsData = await constraintService.query(sId)
-    
-    setWorkers([...workersData])
-    setShifts([...shiftsData])
-    setConstraints([...constraintsData])
+    const sId = currWorker?.stationId;
+    if (!sId) return;
+
+    const workersData = await workerService.query(sId);
+    const shiftsData = await shiftService.query(sId);
+    const constraintsData = await constraintService.query(sId);
+
+    setWorkers([...workersData]);
+    setShifts([...shiftsData]);
+    setConstraints([...constraintsData]);
   }
+  function getWorkersWithConstraints() {
+    const workersWithConstraints = workers
+      .filter((worker) => !worker.isAdmin)
+      .map((worker) => ({
+        ...worker,
+        constraints: constraints.filter((c) => c.workerId === worker.id),
+      }));
+
+    return workersWithConstraints;
+  }
+  async function autoSchedule() {
+    await loadData();
+    const confirm = await Swal.fire({
+      title: "לשבץ אוטומטית?",
+      text: "פעולה זו תמלא את כל המשמרות הפנויות השבוע",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "כן, שבץ!",
+      cancelButtonText: "ביטול",
+    });
+
+    if (!confirm.isConfirmed) return;
+    const workersWithConstraints = getWorkersWithConstraints();
+    const scheduleDraft: Omit<Shift, "id">[] = [];
+
+    const shiftCounts: Record<string, number> = {};
+    workersWithConstraints.forEach((w) => (shiftCounts[w.id] = 0));
+
+    for (let i = 0; i < days.length; i++) {
+      const day = days[i];
+      for (const type of shiftTypes) {
+        const potentialWorkers = workersWithConstraints.filter((worker) => {
+          const hasConstraint = worker.constraints.some(
+            (c) => c.day === day.en && c.type === type.en,
+          );
+          const alreadyWorkingToday = scheduleDraft.some(
+            (s) => s.day === day.en && s.workerId === worker.id,
+          );
+          const workedNightYesterday =
+            type.en === "morning" &&
+            i > 0 &&
+            scheduleDraft.some(
+              (s) =>
+                s.day === days[i - 1].en &&
+                s.type === "night" &&
+                s.workerId === worker.id,
+            );
+          return (
+            !hasConstraint && !alreadyWorkingToday && !workedNightYesterday
+          );
+        });
+
+        if (potentialWorkers.length > 0) {
+          potentialWorkers.sort(
+            (a, b) => shiftCounts[a.id] - shiftCounts[b.id],
+          );
+          const chosenWorker = potentialWorkers[0];
+          const existingShift = shifts.find(
+            (s) => s.day === day.en && s.type === type.en,
+          );
+          const newShift = {
+            id: existingShift?.id,
+            day: day.en,
+            type: type.en,
+            workerId: chosenWorker.id,
+            stationId: currWorker?.stationId || "",
+          };
+          scheduleDraft.push(newShift);
+
+          shiftCounts[chosenWorker.id]++;
+        } else {
+          scheduleDraft.push({
+            day: day.en,
+            type: type.en,
+            workerId: null,
+            stationId: currWorker?.stationId || "",
+          });
+        }
+      }
+    }
+
+    try {
+      const savedShifts = await shiftService.saveAll(scheduleDraft as Shift[]);
+      setShifts([...savedShifts]);
+
+      Swal.fire("בוצע!", "הסידור שובץ אוטומטית ונשמר בהצלחה", "success");
+    } catch (error) {
+      Swal.fire("שגיאה", "הייתה בעיה בשמירת הסידור", "error");
+    }
+  }
+  async function clearBoard() {
+    const { isConfirmed } = await Swal.fire({
+      title: "לנקות את כל הלוח?",
+      text: "לא ניתן יהיה לשחזר את המשמרות שנמחקו",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "כן, מחק הכל",
+      cancelButtonText: "ביטול",
+    });
+
+    if (isConfirmed) {
+      try {
+        await shiftService.removeAll(shifts);
+        Swal.fire("נמחק!", "הלוח נוקה בהצלחה", "success");
+      } catch (err) {
+        Swal.fire("שגיאה", "הייתה בעיה בניקוי הלוח", "error");
+      } finally {
+      }
+    }
+  }
+
   function openModal(day: string, type: string) {
     const shiftTypeObj = shiftTypes.find((t) => t.en === type);
     setSelectedSlot({ day, type: shiftTypeObj || null });
@@ -120,18 +237,18 @@ export function ShiftTable({ currWorker }: Props) {
       Swal.fire("עובד זה משובץ בבוקר שלמחרת - חובה להשאיר זמן למנוחה");
       return;
     }
-    if(isConstrained){
-    const result = await Swal.fire({
-            title: 'שים לב!',
-            text: "העובד הגיש אילוץ למשמרת זו. האם לשבץ אותו בכל זאת?",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'כן, שבץ בכל זאת',
-            cancelButtonText: 'ביטול'
-        });
-        if(!result.isConfirmed) return
+    if (isConstrained) {
+      const result = await Swal.fire({
+        title: "שים לב!",
+        text: "העובד הגיש אילוץ למשמרת זו. האם לשבץ אותו בכל זאת?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "כן, שבץ בכל זאת",
+        cancelButtonText: "ביטול",
+      });
+      if (!result.isConfirmed) return;
     }
     const prevDay = days[dayIdx - 1];
     if (
@@ -146,83 +263,103 @@ export function ShiftTable({ currWorker }: Props) {
     let savedShift;
 
     if (existingShift) {
-        const shiftToUpdate = { ...existingShift, workerId };
-        savedShift = await shiftService.save(shiftToUpdate);
+      const shiftToUpdate = { ...existingShift, workerId };
+      savedShift = await shiftService.save(shiftToUpdate);
     } else {
-      const stationId = currWorker?.stationId
-        const newShift = { day, type, workerId, stationId};
-        savedShift = await shiftService.save({...newShift} as Shift);
+      const stationId = currWorker?.stationId;
+      const newShift = { day, type, workerId, stationId };
+      savedShift = await shiftService.save({ ...newShift } as Shift);
     }
 
-    setShifts(prevShifts => {
-        if (!prevShifts) return [savedShift];
-        const idx = prevShifts.findIndex(s => s.day === day && s.type === type);
-        if (idx !== -1) {
-            const updated = [...prevShifts];
-            updated[idx] = savedShift;
-            return updated;
-        }
-        return [...prevShifts, savedShift];
+    setShifts((prevShifts) => {
+      if (!prevShifts) return [savedShift];
+      const idx = prevShifts.findIndex((s) => s.day === day && s.type === type);
+      if (idx !== -1) {
+        const updated = [...prevShifts];
+        updated[idx] = savedShift;
+        return updated;
+      }
+      return [...prevShifts, savedShift];
     });
   }
   async function onRemoveShift(day: string, type: string) {
     const shift = shifts.find((s) => s.day === day && s.type === type);
-    if (shift) {
-        setShifts(shifts=>[...shifts.filter(s=>s.id !== shift.id)]);
-      await shiftService.remove(shift.id);
-      
+    if (!shift || !shift.id) {
+      console.error("ניסיון למחוק משמרת ללא ID תקין");
+      return;
     }
+    setShifts((shifts) => [...shifts.filter((s) => s.id !== shift.id)]);
+    await shiftService.remove(shift.id);
   }
-  if(!shifts || !workers ||!currWorker) return <LoadingSpinner/>
+  if (!shifts || !workers || !currWorker) return <LoadingSpinner />;
   return (
     <section className="shift-table">
       <div className="table-container">
-      <table border={1} style={{ width: "100%", textAlign: "center" }}>
-        <thead>
-          <tr>
-            <th>משמרת / יום</th>
-            <th>יום ראשון</th>
-            <th>יום שני</th>
-            <th>יום שלישי</th>
-            <th>יום רביעי</th>
-            <th>יום חמישי</th>
-            <th>יום שישי</th>
-            <th>יום שבת</th>
-          </tr>
-        </thead>
-        <tbody>
-          {shiftTypes.map((type) => (
-            <tr key={type.en}>
-              <td>{type.he}</td>
-              {days.map((day) => {
-                const worker = getWorkerInShift(day.en, type.en);
-                return (
-                  <td
-                    key={day.en}
-                    className={`shift-cell ${!currWorker.isAdmin && currWorker?.id === worker?.id ? "logged-worker" : ""}`}
-
-                    onClick={()=>{
-                        if(currWorker.isAdmin) openModal(day.en,type.en)
-                    }}
-                    
-                  >
-                    {worker ? (
-                      <div className="assigned-worker">
-                        <span>{worker.firstName}</span>
-                      </div>
-                    ) : ''
-                    }
-                    {currWorker.isAdmin && worker && <button onClick={(event)=>{
-                        event.stopPropagation()
-                        onRemoveShift(day.en,type.en)
-                        }} className="remove-btn">X</button>}
-                  </td>
-                );
-              })}
+        <table border={1} style={{ width: "100%", textAlign: "center" }}>
+          <thead>
+            <tr>
+              <th>משמרת / יום</th>
+              <th>יום ראשון</th>
+              <th>יום שני</th>
+              <th>יום שלישי</th>
+              <th>יום רביעי</th>
+              <th>יום חמישי</th>
+              <th>יום שישי</th>
+              <th>יום שבת</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {shiftTypes.map((type) => (
+              <tr key={type.en}>
+                <td>{type.he}</td>
+                {days.map((day) => {
+                  const worker = getWorkerInShift(day.en, type.en);
+                  return (
+                    <td
+                      key={day.en}
+                      className={`shift-cell ${!currWorker.isAdmin && currWorker?.id === worker?.id ? "logged-worker" : ""}`}
+                      onClick={() => {
+                        if (currWorker.isAdmin) {
+                          openModal(day.en, type.en);
+                        }
+                      }}
+                    >
+                      {worker ? (
+                        <div className="assigned-worker">
+                          <span>{worker.firstName}</span>
+                        </div>
+                      ) : (
+                        ""
+                      )}
+                      {currWorker.isAdmin && worker && (
+                        <button
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onRemoveShift(day.en, type.en);
+                          }}
+                          className="remove-btn"
+                        >
+                          X
+                        </button>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {currWorker.isAdmin && (
+          <div className="actions-container">
+            <button onClick={autoSchedule} className="auto-schedule-btn">
+              שבץ אוטומטית <span className="icon">🪄</span>
+            </button>
+
+            <button onClick={clearBoard} className="clear-board-btn">
+              ניקוי לוח <span className="icon">🗑️</span>
+            </button>
+          </div>
+        )}{" "}
       </div>
       {selectedSlot && (
         <WorkersModal
@@ -234,12 +371,12 @@ export function ShiftTable({ currWorker }: Props) {
           type={selectedSlot.type!}
           workers={workers}
           constraints={constraints}
-          onSelectWorker={(workerId,isConstrainted) =>
+          onSelectWorker={(workerId, isConstrainted) =>
             onAddWorkerToShift(
               selectedSlot.day,
               selectedSlot.type!.en,
               workerId,
-              isConstrainted
+              isConstrainted,
             )
           }
         />

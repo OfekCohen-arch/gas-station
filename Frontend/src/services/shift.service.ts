@@ -6,6 +6,8 @@ export const shiftService = {
   save,
   getById,
   remove,
+  saveAll,
+  removeAll
 };
 
 async function query(stationId: string) : Promise<Shift[]> {
@@ -16,29 +18,20 @@ async function query(stationId: string) : Promise<Shift[]> {
   if(error) throw error
   return data as Shift[]
 }
-async function save(shift: Shift) : Promise<Shift>{
-  if (shift.id) {
-    const { id, ...updateData } = shift;
-    const {data,error} = await supabase
+async function save(shift: Shift): Promise<Shift> {
+  const { data, error } = await supabase
     .from('shifts')
-    .update(updateData)
-    .eq('id',shift.id)
+    .upsert(shift) 
     .select('*')
-    .single()
-    if(error) throw error
-    return data as Shift
+    .single();
+
+  if (error) {
+    console.error("Error in save (upsert):", error.message);
+    throw error;
   }
-  else{
-    const { id, ...dataToInsert } = shift;
-    const {data,error} = await supabase
-    .from('shifts')
-    .insert([dataToInsert])
-    .select()
-    .single()
-    if(error) throw error
-    return data as Shift
-  }
+  return data as Shift;
 }
+
 async function getById(id: string) : Promise<Shift> {
 const {data,error} = await supabase
 .from('shifts')
@@ -57,4 +50,24 @@ const {data,error} = await supabase
 .single()
 if(error) throw error
 return data as Shift
+}
+async function saveAll(shifts: Shift[]): Promise<Shift[]> {
+  const promises = shifts.map(shift => save(shift));
+  
+  const savedShifts = await Promise.all(promises);
+  
+  return savedShifts;
+}
+
+async function removeAll(shifts: Shift[]) {
+  if (!shifts || shifts.length === 0) return; 
+  const shiftIdsToDelete = shifts.map(shift=>shift.id)
+const {error} = await supabase
+  .from('shifts')
+  .delete()
+  .in('id', shiftIdsToDelete);
+ if (error) {
+    console.error("שגיאה במחיקת משמרות:", error.message);
+    throw error
+  }
 }

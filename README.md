@@ -2,6 +2,14 @@
 
 A modern, multi-tenant SaaS platform built with a **Serverless architecture**, designed for gas stations to manage shifts and labor law compliance in real-time.
 
+### ✨ Features
+
+Live Dashboard: Real-time shift updates using WebSockets.
+Smart Scheduling: Automated conflict detection (Rest periods, back-to-back shifts).
+Employee Portal: Personalized interface for submitting constraints and viewing schedules.
+AI-Powered Insights: Natural language assistant for complex scheduling queries.
+Admin Controls: Full CRUD for employee management and station configuration.
+
 ## 🚀 Key Technical Challenges & Solutions
 
 ### 1. Serverless Architecture & Real-Time Data
@@ -15,9 +23,12 @@ A modern, multi-tenant SaaS platform built with a **Serverless architecture**, d
 ### 3. Frontend State Management & Logic
 * **The Challenge:** Managing complex shift-scheduling UI and validation logic on the client side.
 * **The Solution:** Built with **React and TypeScript**, utilizing **Custom Hooks** for modular and reusable logic. Implemented complex client-side validation for labor law constraints (e.g., rest periods, maximum hours) to provide immediate feedback to users and ensure data integrity before submission.
-
+* 
+### 4. Intelligent Decision Support (AI Integration)
+The Challenge: Helping managers quickly identify scheduling conflicts within a large pool of employee constraints.
+The Solution: Integrated OpenAI's GPT-4 API to create GasPro AI – a contextual assistant. By feeding the AI structured availability data, managers can query the system in natural language (e.g., "Who can work Sunday night?") and receive reasoned, conflict-free recommendations. This bridges the gap between raw data and actionable management decisions.
 ## 🛠 Tech Stack
-* **Frontend:** React, TypeScript, Tailwind CSS.
+* **Frontend:** React, TypeScript, CSS.
 * **Backend/Database:** Supabase (PostgreSQL).
 * **Real-time:** Supabase Channels (WebSockets).
 * **Security:** Supabase Auth & Row Level Security (RLS).

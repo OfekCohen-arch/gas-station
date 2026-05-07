@@ -82,7 +82,11 @@ export function ShiftTable({ currWorker }: Props) {
     const sId = currWorker?.stationId;
     if (!sId) return;
 
+<<<<<<< HEAD
     const workersData = (await workerService.query(sId)).filter(w=>!w.isAdmin);
+=======
+    const workersData = await workerService.query(sId);
+>>>>>>> 76bc9db79104363537870650480b3beb5e1bb48b
     const shiftsData = await shiftService.query(sId);
     const constraintsData = await constraintService.query(sId);
 

@@ -1,5 +1,18 @@
+import { createClient } from "@supabase/supabase-js";
 import type { Worker } from "../types/auth";
 import { supabase } from "./supabase.service";
+
+const createTempClient = () => createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY,
+  {
+    auth: {
+      persistSession: false, // קריטי: לא שומר את המשתמש החדש בדפדפן
+      autoRefreshToken: false,
+      detectSessionInUrl: false
+    }
+  }
+);
 interface SignupInfo {
     email : string;
     phone : string;
@@ -15,19 +28,29 @@ login,
 logout
 }
 async function signup(signupInfo: SignupInfo, isAdmin: boolean = true, stationId: string | null): Promise<Worker> {
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+        const client = (isAdmin && !stationId) ? supabase : createTempClient();
+
+    const { data: authData, error: authError } = await client.auth.signUp({
         email: signupInfo.email,
         password: signupInfo.password,
+        options: {
+            data: { 
+                firstName: signupInfo.firstName,
+                lastName: signupInfo.lastName,
+                isAdmin: isAdmin
+            }
+        }
     });
 
     if (authError || !authData.user) {
         throw new Error(authError?.message || 'הרשמה נכשלה');
     }
 
-    const finalStationId = isAdmin ? authData.user.id : stationId;
+    const userId = authData.user.id;
+    const finalStationId = isAdmin ? userId : stationId;
 
-    const newUser = {
-        id: authData.user.id, 
+    const newUserRecord = {
+        id: userId, 
         email: signupInfo.email,
         firstName: signupInfo.firstName,
         lastName: signupInfo.lastName,
@@ -39,8 +62,8 @@ async function signup(signupInfo: SignupInfo, isAdmin: boolean = true, stationId
 
     const { data: workerData, error: workerError } = await supabase
         .from('workers')
-        .insert([newUser])
-        .select('id, joinDate, firstName, lastName, email, phone, isAdmin, stationId, stationName')
+        .insert([newUserRecord])
+        .select('*')
         .single();
 
     if (workerError) {
@@ -48,10 +71,14 @@ async function signup(signupInfo: SignupInfo, isAdmin: boolean = true, stationId
         throw workerError;
     }
 
-    if (isAdmin) sessionStorage.setItem('loggedInUser', JSON.stringify(workerData));
+    if (isAdmin && !stationId) { 
+        sessionStorage.setItem('loggedInUser', JSON.stringify(workerData));
+    }
 
     return workerData as Worker;
 }
+
+
 
 
 function getLoggedInUser() : Worker | null{

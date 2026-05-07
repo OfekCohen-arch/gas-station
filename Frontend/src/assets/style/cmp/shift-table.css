@@ -9,7 +9,6 @@
 }
 .shift-cell:hover .remove-btn {
   opacity: 1;
-<<<<<<< HEAD
 }
 .remove-btn {
   position: absolute;
@@ -108,9 +107,6 @@ button:active {
 .ai-fab:active {
   transform: scale(0.9);
 }
-
-=======
-}
 .remove-btn {
   position: absolute;
   top: 4px;
@@ -179,4 +175,3 @@ button:active {
 .icon {
   font-size: 18px;
 }
->>>>>>> 76bc9db79104363537870650480b3beb5e1bb48b

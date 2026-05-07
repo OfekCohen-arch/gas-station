@@ -90,4 +90,11 @@
     text-align: center !important;
     width: 100% !important;
   }
+  .ai-fab{
+    width: 50px !important;
+    height: 50px !important;
+  }
+  .chat-input-area{
+    flex-direction: column;
+  }
 }

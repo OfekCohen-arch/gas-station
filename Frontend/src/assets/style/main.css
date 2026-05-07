@@ -11,6 +11,7 @@
 @import './cmp/app-header.css';
 @import './cmp/signup.css';
 @import './cmp/loading-spinner.css';
+@import './cmp/chat-bot.css';
 
 /*set up*/
 @import './setup/mq.css';

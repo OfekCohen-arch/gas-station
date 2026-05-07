@@ -8,6 +8,7 @@ import { WorkersModal } from "./WorkersModal";
 import { constraintService } from "../services/constraint.service";
 import { supabase } from "../services/supabase.service";
 import { LoadingSpinner } from "./LoadingSpinner";
+import { ChatBot } from "./ChatBot";
 
 interface Props {
   currWorker: Worker | null;
@@ -18,6 +19,7 @@ export function ShiftTable({ currWorker }: Props) {
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [constraints, setConstraints] = useState<Constraint[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isChatOpen,setIsChatOpen] = useState<Boolean>(false)
   type ShiftType =
     | { en: "morning"; he: "בוקר" }
     | { en: "evening"; he: "צהריים" }
@@ -80,7 +82,7 @@ export function ShiftTable({ currWorker }: Props) {
     const sId = currWorker?.stationId;
     if (!sId) return;
 
-    const workersData = await workerService.query(sId);
+    const workersData = (await workerService.query(sId)).filter(w=>!w.isAdmin);
     const shiftsData = await shiftService.query(sId);
     const constraintsData = await constraintService.query(sId);
 
@@ -381,6 +383,22 @@ export function ShiftTable({ currWorker }: Props) {
           }
         />
       )}
+      <button 
+  className="ai-fab" 
+  onClick={() => setIsChatOpen(true)}
+  title="שאל את GasPro AI"
+>
+  🤖
+</button>
+{
+  isChatOpen && (
+    <ChatBot
+    constraints={constraints}
+    workers={workers}
+    shifts={shifts}
+    />
+  )
+}
     </section>
   );
 }

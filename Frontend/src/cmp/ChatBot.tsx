@@ -67,7 +67,9 @@ export const ChatBot = ({ workers, shifts, constraints }: Props) => {
     const workersList = workers.map((w) => `שם פרטי: ${w.firstName} שם משפחה: ${w.lastName} מספר טלפון: ${w.phone} אימייל: ${w.email}`).join(", ");
 
     try {
-      const response = await fetch("http://localhost:3030/chat", {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3030";
+
+      const response = await fetch(`${API_BASE_URL}/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
